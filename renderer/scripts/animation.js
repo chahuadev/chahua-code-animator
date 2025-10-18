@@ -347,6 +347,7 @@ class TypingAnimation {
         this.settings = settings;
         this.container = null;
         this.stopped = false;
+        this.scrollThreshold = 140;
     }
 
     async start() {
@@ -374,13 +375,34 @@ class TypingAnimation {
         for (let i = 0; i < chars.length; i++) {
             if (this.stopped) break;
             
+            const shouldFollow = this.shouldAutoScroll();
             const text = document.createTextNode(chars[i]);
             this.container.insertBefore(text, cursor);
+
+            if (shouldFollow) {
+                this.scrollToCursor(cursor);
+            }
             
             await new Promise(resolve => setTimeout(resolve, delay));
         }
 
         cursor.remove();
+    }
+
+    shouldAutoScroll() {
+        const scrollElement = document.scrollingElement || document.documentElement;
+        if (!scrollElement) {
+            return true;
+        }
+        const distanceFromBottom = scrollElement.scrollHeight - (scrollElement.scrollTop + scrollElement.clientHeight);
+        return distanceFromBottom <= this.scrollThreshold;
+    }
+
+    scrollToCursor(cursor) {
+        if (!cursor) {
+            return;
+        }
+        cursor.scrollIntoView({ block: 'end', inline: 'nearest' });
     }
 
     pause() {
