@@ -875,11 +875,17 @@ class PresentationAnimation {
                     const heading = document.createElement('h4');
                     heading.className = 'slide-subheading';
                     heading.innerHTML = utils.formatInline(headingMatch[2]);
+                    if (item.fullText) {
+                        heading.title = item.fullText;
+                    }
                     blockEl.appendChild(heading);
                 } else {
                     const paragraph = document.createElement('p');
                     paragraph.className = 'slide-paragraph';
                     paragraph.innerHTML = utils.formatInline(item.text);
+                    if (item.fullText) {
+                        paragraph.title = item.fullText;
+                    }
                     blockEl.appendChild(paragraph);
                 }
                 return;
@@ -889,6 +895,9 @@ class PresentationAnimation {
                 closeList();
                 const quote = document.createElement('blockquote');
                 quote.innerHTML = utils.formatInline(item.text);
+                if (item.fullText) {
+                    quote.title = item.fullText;
+                }
                 blockEl.appendChild(quote);
                 return;
             }
@@ -923,6 +932,9 @@ class PresentationAnimation {
             const body = document.createElement('div');
             body.className = 'item-text';
             body.innerHTML = utils.formatInline(item.text);
+            if (item.fullText) {
+                body.title = item.fullText;
+            }
 
             li.appendChild(marker);
             li.appendChild(body);
@@ -1100,7 +1112,7 @@ class PresentationAnimation {
         document.addEventListener('keydown', this.keyHandler);
 
         this.onWrapperClick = (event) => {
-            if (event.target.closest('.presentation-nav')) {
+            if (event.target.closest('.presentation-nav') || event.target.closest('.slide-inner')) {
                 return;
             }
             this.nextSlide(true);

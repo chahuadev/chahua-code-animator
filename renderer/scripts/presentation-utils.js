@@ -6,9 +6,28 @@
 (function () {
     'use strict';
 
-    const MAX_ITEMS_PER_BLOCK = 8;
-    const MAX_BLOCKS_PER_SLIDE = 3;
-    const MAX_ITEMS_PER_SLIDE = 14;
+    const MAX_ITEMS_PER_BLOCK = 4;
+    const MAX_BLOCKS_PER_SLIDE = 2;
+    const MAX_ITEMS_PER_SLIDE = 8;
+    const MAX_AGENDA_ITEMS_PER_SLIDE = 5;
+
+    const ITEM_LENGTH_LIMITS = {
+        paragraph: 180,
+        quote: 220,
+        checkbox: 120,
+        bullet: 120,
+        numbered: 120,
+        default: 140
+    };
+
+    const ITEM_WORD_LIMITS = {
+        paragraph: 28,
+        quote: 34,
+        checkbox: 18,
+        bullet: 18,
+        numbered: 18,
+        default: 20
+    };
 
     function escapeHtml(source) {
         if (!source) {
@@ -33,6 +52,116 @@
             .replace(/\s+-+\s+/g, ' — ')
             .trim()
             .replace(/\s*[:：]\s*$/, '');
+    }
+
+    function stripInlineMarkdown(text) {
+        if (!text) {
+            return '';
+        }
+        return text
+            .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+            .replace(/`([^`]+)`/g, '$1')
+            .replace(/\*\*(.+?)\*\*/g, '$1')
+            .replace(/__(.+?)__/g, '$1')
+            .replace(/\*(.+?)\*/g, '$1')
+            .replace(/_(.+?)_/g, '$1')
+            .replace(/~~(.+?)~~/g, '$1')
+            .replace(/<(?:.|\n)*?>/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function condenseText(text, limit, wordLimit) {
+        if (!text) {
+            return '';
+        }
+        let cleaned = text.replace(/\s+/g, ' ').trim();
+        if (!cleaned) {
+            return '';
+        }
+        if (!Number.isFinite(limit) || limit <= 0) {
+            return cleaned;
+        }
+        const originalLength = cleaned.length;
+        let truncated = false;
+
+        if (Number.isFinite(wordLimit) && wordLimit > 0) {
+            const words = cleaned.split(/\s+/);
+            if (words.length > wordLimit) {
+                cleaned = words.slice(0, wordLimit).join(' ');
+                truncated = true;
+            }
+        }
+
+        if (cleaned.length <= limit) {
+            return truncated ? `${cleaned}…` : cleaned;
+        }
+
+        truncated = true;
+        const boundaries = ['. ', '! ', '? ', '。', '！', '？', '; ', ': ', ' และ ', ', ', ' – ', ' — ', ' - ', ' → '];
+        let cutoff = -1;
+
+        boundaries.forEach(boundary => {
+            const idx = cleaned.lastIndexOf(boundary, limit);
+            if (idx >= Math.floor(limit * 0.5) && idx > cutoff) {
+                cutoff = idx + (boundary.trim().length ? boundary.length - 1 : 0);
+            }
+        });
+
+        if (cutoff === -1) {
+            cutoff = cleaned.lastIndexOf(' ', limit);
+        }
+
+        if (cutoff === -1) {
+            cutoff = limit;
+        }
+
+        let result = cleaned.slice(0, cutoff).trim().replace(/[,:;、，\-–—]+$/, '').trim();
+        if (!result) {
+            result = cleaned.slice(0, limit).trim();
+        }
+
+        if (truncated || originalLength > result.length) {
+            return result + '…';
+        }
+        return result;
+    }
+
+    function compactItem(item) {
+        if (!item || typeof item.text !== 'string') {
+            return item;
+        }
+        const limit = ITEM_LENGTH_LIMITS[item.type] || ITEM_LENGTH_LIMITS.default;
+        const wordLimit = ITEM_WORD_LIMITS[item.type] || ITEM_WORD_LIMITS.default;
+        const plain = stripInlineMarkdown(item.text);
+        const condensed = condenseText(plain, limit, wordLimit);
+        return {
+            ...item,
+            text: condensed,
+            fullText: plain
+        };
+    }
+
+    function compactItems(items) {
+        if (!Array.isArray(items)) {
+            return [];
+        }
+        return items.map(item => compactItem({ ...item }));
+    }
+
+    function chunkArray(array, size) {
+        if (!Array.isArray(array) || array.length === 0) {
+            return [];
+        }
+        if (!Number.isFinite(size) || size <= 0) {
+            return [array.slice()];
+        }
+        const chunks = [];
+        for (let i = 0; i < array.length; i += size) {
+            chunks.push(array.slice(i, i + size));
+        }
+        return chunks;
     }
 
     function formatInlineMarkdown(text) {
@@ -305,7 +434,7 @@
                 }
                 const baseBlock = {
                     heading: sub.title,
-                    items: sub.items.map(item => ({ ...item }))
+                    items: compactItems(sub.items)
                 };
                 blocks.push(...chunkBlockItems(baseBlock));
             });
@@ -314,7 +443,7 @@
         if ((section.items || []).length) {
             const base = {
                 heading: null,
-                items: section.items.map(item => ({ ...item }))
+                items: compactItems(section.items)
             };
             blocks.push(...chunkBlockItems(base));
         }
@@ -384,12 +513,16 @@
         if ((parsed.sections || []).length) {
             const agendaItems = parsed.sections
                 .map(section => section.title)
-                .filter(Boolean);
+                .filter(Boolean)
+                .map(title => condenseText(stripInlineMarkdown(title), 68, 12));
             if (agendaItems.length) {
-                slides.push({
-                    type: 'agenda',
-                    title: 'Agenda',
-                    items: agendaItems
+                const agendaChunks = chunkArray(agendaItems, MAX_AGENDA_ITEMS_PER_SLIDE);
+                agendaChunks.forEach((chunk, index) => {
+                    slides.push({
+                        type: 'agenda',
+                        title: index === 0 ? 'Agenda' : `Agenda (ต่อ ${index + 1})`,
+                        items: chunk
+                    });
                 });
             }
         }
