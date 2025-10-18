@@ -111,6 +111,15 @@
                         <div class="style-name">Typing</div>
                         <div class="style-desc">Character by character</div>
                     </button>
+                    <button class="style-card" data-style="presentation">
+                        <div class="style-icon">
+                            <svg width="32" height="32" fill="currentColor" viewBox="0 0 32 32">
+                                <path d="M4 6a2 2 0 012-2h20a2 2 0 012 2v16a2 2 0 01-2 2h-6l2.4 4H18l-1.6-4h-0.8L14 28H9.6L12 24H6a2 2 0 01-2-2V6zm4 4h16v2H8v-2zm0 5h16v2H8v-2zm0 5h10v2H8v-2z"/>
+                            </svg>
+                        </div>
+                        <div class="style-name">Presentation</div>
+                        <div class="style-desc">Markdown slide deck</div>
+                    </button>
                     <!-- <button class="style-card" data-style="wave">
                         <div class="style-icon">
                             <svg width="32" height="32" fill="currentColor">
@@ -166,6 +175,34 @@
                         <span class="range-value" id="linesValue">24</span>
                     </label>
 
+                    <label>
+                        <span>Font Family</span>
+                        <select id="fontFamilySelect">
+                            <option value="consolas">Consolas</option>
+                            <option value="fira">Fira Code</option>
+                            <option value="jetbrains">JetBrains Mono</option>
+                            <option value="cascadia">Cascadia Code</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Wrap Width</span>
+                        <input type="range" id="wrapWidthSlider" min="50" max="90" step="5" value="70">
+                        <span class="range-value" id="wrapWidthValue">70vw</span>
+                    </label>
+
+                    <label>
+                        <span>Bottom Padding</span>
+                        <input type="range" id="paddingSlider" min="40" max="240" step="10" value="140">
+                        <span class="range-value" id="paddingValue">140px</span>
+                    </label>
+
+                    <label>
+                        <span>Cursor Blink Speed</span>
+                        <input type="range" id="cursorSpeedSlider" min="0.4" max="1.8" step="0.1" value="0.8">
+                        <span class="range-value" id="cursorSpeedValue">0.8s</span>
+                    </label>
+
                     <label class="checkbox-label">
                         <input type="checkbox" id="syntaxHighlight" checked>
                         <span>Syntax Highlighting</span>
@@ -175,6 +212,28 @@
                         <input type="checkbox" id="showLineNumbers">
                         <span>Show Line Numbers</span>
                     </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="highlightCurrentLine" checked>
+                        <span>Highlight Current Line</span>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="highContrast">
+                        <span>High Contrast Background</span>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoLoop">
+                        <span>Auto-loop Typing</span>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="startAssembled">
+                        <span>Skip Typing (Start Assembled)</span>
+                    </label>
+
+                    <button id="resetSettingsBtn" class="btn-secondary">Reset Settings</button>
                 </div>
             </div>
     </aside>
@@ -237,6 +296,7 @@
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <script src="scripts/presentation-utils.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

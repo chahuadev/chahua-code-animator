@@ -12,19 +12,56 @@
 //                         State Management
 // ══════════════════════════════════════════════════════════════════════════════
 
+const FONT_FAMILIES = {
+    consolas: "'Consolas', 'Courier New', monospace",
+    fira: "'Fira Code', 'Consolas', monospace",
+    jetbrains: "'JetBrains Mono', 'Consolas', monospace",
+    cascadia: "'Cascadia Code', 'Consolas', monospace"
+};
+
+const DEFAULT_SETTINGS = {
+    speed: 1.0,
+    blockSize: 10,
+    linesPerBlock: 24,
+    syntaxHighlight: true,
+    showLineNumbers: false,
+    fontFamily: 'consolas',
+    wrapWidth: 70,
+    bottomPadding: 140,
+    cursorBlinkSpeed: 0.8,
+    highlightCurrentLine: true,
+    highContrast: false,
+    autoLoop: false,
+    startAssembled: false
+};
+
 const state = {
     currentFile: null,
     fileContent: null,
     fileHash: null,
-    selectedStyle: 'rain',
-    settings: {
-        speed: 1.0,
-        blockSize: 10,
-        linesPerBlock: 24,
-        syntaxHighlight: true,
-        showLineNumbers: false
-    }
+    selectedStyle: 'typing',
+    settings: { ...DEFAULT_SETTINGS }
 };
+
+const PRESENTATION_STYLE = 'presentation';
+
+function isMarkdownPath(filePath) {
+    if (!filePath || typeof filePath !== 'string') {
+        return false;
+    }
+    return filePath.trim().toLowerCase().endsWith('.md');
+}
+
+function resolveFontFamily(key) {
+    return FONT_FAMILIES[key] || FONT_FAMILIES.consolas;
+}
+
+function escapeHtml(source) {
+    return source
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 //                         DOM Elements
@@ -48,6 +85,18 @@ const elements = {
     linesValue: document.getElementById('linesValue'),
     syntaxHighlight: document.getElementById('syntaxHighlight'),
     showLineNumbers: document.getElementById('showLineNumbers'),
+    fontFamilySelect: document.getElementById('fontFamilySelect'),
+    wrapWidthSlider: document.getElementById('wrapWidthSlider'),
+    wrapWidthValue: document.getElementById('wrapWidthValue'),
+    paddingSlider: document.getElementById('paddingSlider'),
+    paddingValue: document.getElementById('paddingValue'),
+    cursorSpeedSlider: document.getElementById('cursorSpeedSlider'),
+    cursorSpeedValue: document.getElementById('cursorSpeedValue'),
+    highlightCurrentLine: document.getElementById('highlightCurrentLine'),
+    highContrast: document.getElementById('highContrast'),
+    autoLoop: document.getElementById('autoLoop'),
+    startAssembled: document.getElementById('startAssembled'),
+    resetSettingsBtn: document.getElementById('resetSettingsBtn'),
     
     previewBtn: document.getElementById('previewBtn'),
     playBtn: document.getElementById('playBtn'),
@@ -209,6 +258,57 @@ function initSidebarResizer() {
     setSidebarWidth(getSidebarWidth());
 }
 
+function syncSettingsUI() {
+    elements.speedSlider.value = state.settings.speed;
+    elements.speedValue.textContent = state.settings.speed.toFixed(1) + 'x';
+
+    elements.blockSizeSlider.value = state.settings.blockSize;
+    elements.blockSizeValue.textContent = state.settings.blockSize + 'px';
+
+    elements.linesSlider.value = state.settings.linesPerBlock;
+    elements.linesValue.textContent = state.settings.linesPerBlock;
+
+    elements.syntaxHighlight.checked = state.settings.syntaxHighlight;
+    elements.showLineNumbers.checked = state.settings.showLineNumbers;
+    if (elements.highlightCurrentLine) {
+        elements.highlightCurrentLine.checked = state.settings.highlightCurrentLine;
+    }
+    if (elements.highContrast) {
+        elements.highContrast.checked = state.settings.highContrast;
+    }
+    if (elements.autoLoop) {
+        elements.autoLoop.checked = state.settings.autoLoop;
+    }
+    if (elements.startAssembled) {
+        elements.startAssembled.checked = state.settings.startAssembled;
+    }
+
+    if (elements.fontFamilySelect) {
+        elements.fontFamilySelect.value = state.settings.fontFamily;
+    }
+
+    if (elements.wrapWidthSlider) {
+        elements.wrapWidthSlider.value = state.settings.wrapWidth;
+    }
+    if (elements.wrapWidthValue) {
+        elements.wrapWidthValue.textContent = state.settings.wrapWidth + 'vw';
+    }
+
+    if (elements.paddingSlider) {
+        elements.paddingSlider.value = state.settings.bottomPadding;
+    }
+    if (elements.paddingValue) {
+        elements.paddingValue.textContent = state.settings.bottomPadding + 'px';
+    }
+
+    if (elements.cursorSpeedSlider) {
+        elements.cursorSpeedSlider.value = state.settings.cursorBlinkSpeed;
+    }
+    if (elements.cursorSpeedValue) {
+        elements.cursorSpeedValue.textContent = state.settings.cursorBlinkSpeed.toFixed(1) + 's';
+    }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //                         File Operations
 // ══════════════════════════════════════════════════════════════════════════════
@@ -252,7 +352,7 @@ async function loadFile(filePath) {
         // Update UI
         updateFileInfo(result);
         updatePreview();
-        enableButtons();
+    updateActionAvailability();
         
         showToast('File loaded successfully ', 'success');
         
@@ -280,49 +380,149 @@ function updateFileInfo(fileData) {
 }
 
 function updatePreview() {
-    if (!state.fileContent) return;
-    
+    if (!state.fileContent) {
+        return;
+    }
+
+    if (state.selectedStyle === PRESENTATION_STYLE) {
+        updatePresentationPreview();
+    } else {
+        updateTypingPreview();
+    }
+}
+
+function updateTypingPreview() {
     const lines = state.fileContent.split('\n');
     const totalLines = lines.length;
     const blocks = Math.ceil(totalLines / state.settings.linesPerBlock);
-    
-    // Create preview
-    let previewHTML = '<div class="code-preview">';
-    previewHTML += '<pre style="font-size: 0.875rem; color: #cbd5e1; line-height: 1.5;">';
-    
-    // Show first 20 lines
+    const wrapWidth = Math.min(Math.max(state.settings.wrapWidth || 70, 40), 120);
+    const fontFamily = resolveFontFamily(state.settings.fontFamily);
+
+    let previewHTML = `<div class="code-preview" style="font-family: ${fontFamily};">`;
+    previewHTML += `<pre style="font-size: 0.875rem; color: #cbd5e1; line-height: 1.5; white-space: pre-wrap; max-width: min(${wrapWidth}vw, 900px);">`;
+
     const previewLines = lines.slice(0, 20);
     if (state.settings.syntaxHighlight) {
         previewHTML += highlightCode(previewLines.join('\n'));
     } else {
-        previewHTML += previewLines.join('\n');
+        previewHTML += escapeHtml(previewLines.join('\n'));
     }
-    
+
     if (totalLines > 20) {
         previewHTML += `\n\n... ${totalLines - 20} more lines ...`;
     }
-    
+
     previewHTML += '</pre></div>';
-    
+
     elements.previewContent.innerHTML = previewHTML;
-    elements.previewStats.innerHTML = ` ${totalLines} lines • ${blocks} blocks • ${state.selectedStyle} style`;
+    elements.previewStats.innerHTML = ` ${totalLines} lines • ${blocks} blocks • ${state.selectedStyle} style • wrap ${wrapWidth}vw`;
+}
+
+function updatePresentationPreview() {
+    const utils = window.presentationUtils;
+
+    if (!utils) {
+        elements.previewContent.innerHTML = `<div class="presentation-preview-card error"><h4>Presentation module unavailable</h4><p>ไม่พบสคริปต์สำหรับประมวลผล Markdown โปรดรีเฟรชหน้าต่าง</p></div>`;
+        elements.previewStats.innerHTML = ' Presentation mode unavailable';
+        return;
+    }
+
+    if (!isMarkdownPath(state.currentFile)) {
+        elements.previewContent.innerHTML = `
+            <div class="presentation-preview-card warning">
+                <h4>เลือกไฟล์ Markdown (.md)</h4>
+                <p>โหมดพรีเซนเทชั่นจะสร้างสไลด์จากเอกสาร Markdown เท่านั้น โปรดเลือกไฟล์สถานะหรือรายงานที่ต้องการ</p>
+            </div>`;
+        elements.previewStats.innerHTML = ' Waiting for Markdown source';
+        return;
+    }
+
+    try {
+        const model = utils.buildPresentationModel(state.fileContent);
+        const slideTitles = model.slides.map(slide => slide.title).filter(Boolean);
+        const itemsToShow = slideTitles.slice(0, 6).map((title, index) => `
+            <li>
+                <span class="index">${index + 1}</span>
+                <div class="title">${utils.formatInline(title)}</div>
+            </li>`).join('');
+
+        const remaining = Math.max(slideTitles.length - 6, 0);
+        const extraNotice = remaining > 0 ? `<div class="preview-more">+${remaining} หัวข้อเพิ่มเติม</div>` : '';
+
+        const completed = model.checkboxCounts.completed;
+        const total = model.checkboxCounts.total;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        elements.previewContent.innerHTML = `
+            <div class="presentation-preview-card">
+                <header>
+                    <h3>${utils.formatInline(model.meta.title || 'Chahua Presentation')}</h3>
+                    <p class="subtitle">${utils.formatInline(model.meta.subtitle || 'Auto-generated slide deck')}</p>
+                    <div class="meta">
+                        ${model.meta.lastUpdated ? `<span><strong>Updated:</strong> ${utils.escapeHtml(model.meta.lastUpdated)}</span>` : ''}
+                        ${model.meta.author ? `<span><strong>Author:</strong> ${utils.escapeHtml(model.meta.author)}</span>` : ''}
+                    </div>
+                </header>
+                <section class="slides-outline">
+                    <ol>${itemsToShow || '<li class="empty">ยังไม่มีหัวข้อที่สามารถสรุปได้</li>'}</ol>
+                    ${extraNotice}
+                </section>
+                <footer>
+                    <div class="progress-label">Task Progress</div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${percent}%;"></div></div>
+                    <div class="progress-meta">${total > 0 ? `${completed}/${total} รายการเสร็จสิ้น (${percent}%)` : 'ไม่มีเช็คลิสต์ในเอกสารนี้'}</div>
+                </footer>
+            </div>`;
+
+        const progressText = total > 0 ? `${completed}/${total} tasks done` : 'No tracked tasks';
+        elements.previewStats.innerHTML = ` ${slideTitles.length} slides • ${progressText}`;
+    } catch (error) {
+        console.error('Presentation preview error:', error);
+        elements.previewContent.innerHTML = `
+            <div class="presentation-preview-card error">
+                <h4>ไม่สามารถสร้างพรีวิวได้</h4>
+                <p>${utils.escapeHtml(error.message)}</p>
+            </div>`;
+        elements.previewStats.innerHTML = ' Preview error';
+    }
 }
 
 function highlightCode(code) {
     return code
-        .replace(/&/g, '')
-        .replace(/</g, '')
-        .replace(/>/g, '')
-        .replace(/(\/\/[^\n]*)/g, '<span style="color: #6b7280;">$1</span>')
-        .replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #6b7280;">$1</span>')
-        .replace(/([\'\"][^\'\"]*[\'\"])/g, '<span style="color: #10b981;">$1</span>')
-        .replace(/\b(class|function|const|let|var|if|else|switch|case|return|throw|try|catch|async|await|for|while|do|break|continue|new|this|super|extends|import|export|from|default|public|private|protected|static)\b/g, '<span style="color: #8b5cf6;">$1</span>')
-        .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span style="color: #f59e0b;">$1</span>');
+    let escaped = escapeHtml(code);
+    const overlays = [];
+
+    const apply = (regex, className) => {
+        escaped = escaped.replace(regex, (match) => {
+            const token = `__HL__${overlays.length}__`;
+            overlays.push({ token, value: `<span style="color: ${className};">${match}</span>` });
+            return token;
+        });
+    };
+
+    apply(/\/\*[\s\S]*?\*\//g, '#6b7280');
+    apply(/\/\/[^\n]*/g, '#6b7280');
+    apply(/('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`)/g, '#10b981');
+    apply(/\b\d+(?:\.\d+)?\b/g, '#f59e0b');
+    apply(/\b(class|function|const|let|var|if|else|switch|case|return|throw|try|catch|async|await|for|while|do|break|continue|new|this|super|extends|import|export|from|default|public|private|protected|static)\b/g, '#8b5cf6');
+
+    overlays.forEach(({ token, value }) => {
+        escaped = escaped.replace(token, value);
+    });
+
+    return escaped;
 }
 
-function enableButtons() {
-    elements.previewBtn.disabled = false;
-    elements.playBtn.disabled = false;
+function updateActionAvailability() {
+    const hasFile = !!state.fileContent;
+    elements.previewBtn.disabled = !hasFile;
+
+    let canPlay = hasFile;
+    if (state.selectedStyle === PRESENTATION_STYLE) {
+        canPlay = canPlay && isMarkdownPath(state.currentFile);
+    }
+
+    elements.playBtn.disabled = !canPlay;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -361,13 +561,20 @@ elements.styleCards.forEach(card => {
     card.addEventListener('click', () => {
         elements.styleCards.forEach(c => c.classList.remove('active'));
         card.classList.add('active');
-        state.selectedStyle = card.dataset.style;
+        const nextStyle = card.dataset.style;
+        state.selectedStyle = nextStyle;
         
         if (state.fileContent) {
             updatePreview();
         }
-        
-        showToast(`Animation style: ${card.querySelector('.style-name').textContent}`, 'info');
+
+        updateActionAvailability();
+
+        if (nextStyle === PRESENTATION_STYLE && state.fileContent && !isMarkdownPath(state.currentFile)) {
+            showToast('Presentation mode requires a Markdown (.md) file', 'warning');
+        } else {
+            showToast(`Animation style: ${card.querySelector('.style-name').textContent}`, 'info');
+        }
     });
 });
 
@@ -403,6 +610,75 @@ elements.showLineNumbers.addEventListener('change', (e) => {
     state.settings.showLineNumbers = e.target.checked;
 });
 
+if (elements.fontFamilySelect) {
+    elements.fontFamilySelect.addEventListener('change', (e) => {
+        state.settings.fontFamily = e.target.value;
+        if (state.fileContent) {
+            updatePreview();
+        }
+    });
+}
+
+if (elements.wrapWidthSlider && elements.wrapWidthValue) {
+    elements.wrapWidthSlider.addEventListener('input', (e) => {
+        state.settings.wrapWidth = parseInt(e.target.value, 10);
+        elements.wrapWidthValue.textContent = state.settings.wrapWidth + 'vw';
+        if (state.fileContent) {
+            updatePreview();
+        }
+    });
+}
+
+if (elements.paddingSlider && elements.paddingValue) {
+    elements.paddingSlider.addEventListener('input', (e) => {
+        state.settings.bottomPadding = parseInt(e.target.value, 10);
+        elements.paddingValue.textContent = state.settings.bottomPadding + 'px';
+    });
+}
+
+if (elements.cursorSpeedSlider && elements.cursorSpeedValue) {
+    elements.cursorSpeedSlider.addEventListener('input', (e) => {
+        state.settings.cursorBlinkSpeed = parseFloat(e.target.value);
+        elements.cursorSpeedValue.textContent = state.settings.cursorBlinkSpeed.toFixed(1) + 's';
+    });
+}
+
+if (elements.highlightCurrentLine) {
+    elements.highlightCurrentLine.addEventListener('change', (e) => {
+        state.settings.highlightCurrentLine = e.target.checked;
+    });
+}
+
+if (elements.highContrast) {
+    elements.highContrast.addEventListener('change', (e) => {
+        state.settings.highContrast = e.target.checked;
+    });
+}
+
+if (elements.autoLoop) {
+    elements.autoLoop.addEventListener('change', (e) => {
+        state.settings.autoLoop = e.target.checked;
+    });
+}
+
+if (elements.startAssembled) {
+    elements.startAssembled.addEventListener('change', (e) => {
+        state.settings.startAssembled = e.target.checked;
+    });
+}
+
+if (elements.resetSettingsBtn) {
+    elements.resetSettingsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.settings = { ...DEFAULT_SETTINGS };
+        syncSettingsUI();
+        if (state.fileContent) {
+            updatePreview();
+        }
+        showToast('Settings reset to defaults', 'info');
+    });
+}
+
 // Preview Button
 elements.previewBtn.addEventListener('click', () => {
     if (!state.fileContent) return;
@@ -414,6 +690,10 @@ elements.previewBtn.addEventListener('click', () => {
 // Play Button
 elements.playBtn.addEventListener('click', async () => {
     if (!state.fileContent) return;
+    if (state.selectedStyle === PRESENTATION_STYLE && !isMarkdownPath(state.currentFile)) {
+        showToast('Presentation mode requires a Markdown (.md) file', 'error');
+        return;
+    }
     
     try {
         showToast('Opening animation window...', 'info');
@@ -513,6 +793,8 @@ elements.exportLogBtn.addEventListener('click', async () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 initSidebarResizer();
+syncSettingsUI();
+updateActionAvailability();
 
 console.log(' Chahua Code Animator initialized');
 console.log(' Security: ENABLED');
