@@ -389,6 +389,8 @@ class TypingAnimation {
         this.container = null;
         this.stopped = false;
         this.scrollThreshold = 140;
+    const approxLine = this.settings.blockSize + 2;
+    this.viewPadding = Math.max(Math.round(approxLine * 3.5), 96);
         this.textContainer = null;
         this.cursor = null;
         this.lineNumbersEl = null;
@@ -499,7 +501,21 @@ class TypingAnimation {
         if (!cursor) {
             return;
         }
-        cursor.scrollIntoView({ block: 'end', inline: 'nearest' });
+        const scrollElement = document.scrollingElement || document.documentElement;
+        if (!scrollElement) {
+            return;
+        }
+
+        const viewportHeight = window.innerHeight || scrollElement.clientHeight;
+        const rect = cursor.getBoundingClientRect();
+
+        if (rect.bottom > viewportHeight - this.viewPadding) {
+            const delta = rect.bottom - (viewportHeight - this.viewPadding);
+            scrollElement.scrollTop = Math.min(scrollElement.scrollTop + delta, scrollElement.scrollHeight - scrollElement.clientHeight);
+        } else if (rect.top < this.viewPadding) {
+            const delta = rect.top - this.viewPadding;
+            scrollElement.scrollTop = Math.max(scrollElement.scrollTop + delta, 0);
+        }
     }
 
     pause() {
