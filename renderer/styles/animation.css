@@ -1,0 +1,309 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   Chahua Code Animator - Animation Styles
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ! ══════════════════════════════════════════════════════════════════════════════
+   !  บริษัท ชาหัว ดีเวลลอปเมนต์ จำกัด (Chahua Development Co., Ltd.)
+   !  Repository: https://github.com/chahuadev/chahua-code-animator.git
+   !  Version: 1.0.0
+   !  License: MIT
+   !  Contact: chahuadev@gmail.com
+   ! ══════════════════════════════════════════════════════════════════════════════ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at 50% 50%, 
+        rgba(139, 92, 246, 0.1) 0%, 
+        rgba(15, 23, 42, 1) 100%);
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+#animationContainer {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+body.scroll-enabled {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+}
+
+#animationContainer.scroll-enabled {
+    height: auto;
+    min-height: 100vh;
+    padding: 2rem 1.5rem 6rem;
+    overflow: visible;
+    max-width: 100%;
+}
+
+/* Controls */
+.controls {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    background: rgba(30, 41, 59, 0.9);
+    padding: 1rem;
+    border-radius: 1rem;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+}
+
+.control-btn {
+    background: rgba(51, 65, 85, 0.8);
+    color: #cbd5e1;
+    border: none;
+    border-radius: 0.75rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    background: rgba(71, 85, 105, 1);
+    transform: translateY(-2px);
+}
+
+.control-btn.close-btn {
+    background: rgba(239, 68, 68, 0.8);
+    color: white;
+}
+
+.control-btn.close-btn:hover {
+    background: rgba(220, 38, 38, 1);
+}
+
+/* Info Overlay */
+.info-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    transition: opacity 0.3s ease;
+}
+
+.info-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.info-content {
+    text-align: center;
+    color: #cbd5e1;
+}
+
+.info-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #f1f5f9;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(139, 92, 246, 0.2);
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Code Blocks */
+.code-block {
+    position: absolute;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: #d4d4d4;
+    white-space: pre;
+    overflow-wrap: normal;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.assembled-wrapper {
+    max-width: min(90%, 95vw);
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+body.scroll-enabled .assembled-wrapper {
+    padding-bottom: 3rem;
+}
+
+.code-block.falling {
+    animation: fadeIn 0.3s ease;
+}
+
+.code-block.assembled {
+    animation: assembleBlock 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes assembleBlock {
+    0% {
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Typing Animation */
+.typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: #8b5cf6;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* Wave Animation */
+@keyframes wave {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Particle Animation */
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFade 2s ease-out forwards;
+}
+
+@keyframes particleFade {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+/* VS Code Style Syntax Highlighting */
+.assembled-code {
+    background: rgba(30, 30, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #d4d4d4;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    display: flex;
+    overflow: auto;
+}
+
+/* Line Numbers */
+.line-numbers {
+    color: #858585;
+    text-align: right;
+    padding-right: 1rem;
+    margin-right: 1rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    -webkit-user-select: none;
+    user-select: none;
+    min-width: 3em;
+    flex-shrink: 0;
+}
+
+.code-content {
+    flex: 1;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+/* VS Code Theme Colors */
+.keyword { color: #569cd6; }
+.string { color: #ce9178; }
+.comment { color: #6a9955; }
+.function { color: #dcdcaa; }
+.number { color: #b5cea8; }
+.operator { color: #d4d4d4; }
+.class-name { color: #4ec9b0; }
+.property { color: #9cdcfe; }
+.constant { color: #4fc1ff; }
+.variable { color: #9cdcfe; }
+.punctuation { color: #d4d4d4; }
+.regex { color: #d16969; }
+.builtin { color: #4ec9b0; }
+.tag { color: #569cd6; }
+.attribute { color: #9cdcfe; }
+.decorator { color: #dcdcaa; }
+
