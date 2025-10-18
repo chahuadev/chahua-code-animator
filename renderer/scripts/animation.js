@@ -33,6 +33,7 @@ function setScrollable(enabled) {
 //                         Animation Styles
 // ══════════════════════════════════════════════════════════════════════════════
 
+/*
 class RainFallAnimation {
     constructor(code, settings) {
         this.code = code;
@@ -338,6 +339,7 @@ class RainFallAnimation {
         setScrollable(false);
     }
 }
+*/
 
 class TypingAnimation {
     constructor(code, settings) {
@@ -367,7 +369,7 @@ class TypingAnimation {
         this.container.appendChild(cursor);
 
         const chars = this.code.split('');
-        const delay = 50 / this.settings.speed;
+        const delay = 50 / (this.settings.speed * 10); // 10x faster
 
         for (let i = 0; i < chars.length; i++) {
             if (this.stopped) break;
@@ -398,6 +400,7 @@ class TypingAnimation {
     }
 }
 
+/*
 class WaveAnimation {
     constructor(code, settings) {
         this.code = code;
@@ -466,7 +469,9 @@ class WaveAnimation {
         setScrollable(false);
     }
 }
+*/
 
+/*
 class ParticlesAnimation {
     constructor(code, settings) {
         this.code = code;
@@ -561,6 +566,7 @@ class ParticlesAnimation {
         setScrollable(false);
     }
 }
+*/
 
 // ══════════════════════════════════════════════════════════════════════════════
 //                         Animation Manager
@@ -578,7 +584,7 @@ function startAnimation(data) {
 
     isPaused = false;
 
-
+    /*
     const animations = {
         rain: RainFallAnimation,
         typing: TypingAnimation,
@@ -587,6 +593,10 @@ function startAnimation(data) {
     };
 
     const AnimationClass = animations[data.style] || RainFallAnimation;
+    */
+    
+    // Use only TypingAnimation with 10x speed
+    const AnimationClass = TypingAnimation;
     animationEngine = new AnimationClass(data.code, data.settings);
     animationEngine.start();
 }
