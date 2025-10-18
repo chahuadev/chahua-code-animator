@@ -577,8 +577,7 @@ function startAnimation(data) {
     setScrollable(false);
 
     isPaused = false;
-    elements.playIcon.style.display = 'none';
-    elements.pauseIcon.style.display = 'block';
+
 
     const animations = {
         rain: RainFallAnimation,
@@ -599,7 +598,6 @@ function startAnimation(data) {
 // Receive animation data from main window
 if (window.electronAPI) {
     window.electronAPI.onAnimationData((data) => {
-        console.log('Received animation data:', data);
         animationData = data;
         startAnimation(data);
     });
