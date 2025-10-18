@@ -29,6 +29,47 @@ function setScrollable(enabled) {
     }
 }
 
+function escapeHtml(source) {
+    return source
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function highlightCodeSnippet(code) {
+    let escaped = escapeHtml(code);
+    const placeholders = [];
+
+    const apply = (regex, className) => {
+        escaped = escaped.replace(regex, (match) => {
+            const token = `__HL__${placeholders.length}__`;
+            placeholders.push({ token, value: `<span class="${className}">${match}</span>` });
+            return token;
+        });
+    };
+
+    apply(/\/\*[\s\S]*?\*\//g, 'comment');
+    apply(/\/\/[^\n]*/g, 'comment');
+    apply(/('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`)/g, 'string');
+    apply(/\b\d+(?:\.\d+)?\b/g, 'number');
+    apply(/\b(class|function|const|let|var|if|else|switch|case|return|throw|try|catch|async|await|for|while|do|break|continue|new|this|super|extends|import|export|from|default|public|private|protected|static)\b/g, 'keyword');
+
+    placeholders.forEach(({ token, value }) => {
+        escaped = escaped.replace(token, value);
+    });
+
+    return escaped;
+}
+
+function buildLineNumbers(text) {
+    const total = Math.max(text.split('\n').length, 1);
+    const numbers = [];
+    for (let i = 1; i <= total; i++) {
+        numbers.push(String(i));
+    }
+    return numbers.join('\n');
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //                         Animation Styles
 // ══════════════════════════════════════════════════════════════════════════════
@@ -348,26 +389,79 @@ class TypingAnimation {
         this.container = null;
         this.stopped = false;
         this.scrollThreshold = 140;
+        this.textContainer = null;
+        this.cursor = null;
+        this.lineNumbersEl = null;
+        this.currentText = '';
     }
 
     async start() {
-        this.container = document.createElement('pre');
-        this.container.style.cssText = `
-            padding: 2rem;
-            font-family: 'Consolas', monospace;
-            font-size: ${this.settings.blockSize + 2}px;
-            color: #f1f5f9;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            max-width: min(70vw, 900px);
-            margin: 2rem auto 6rem;
-        `;
+        this.stopped = false;
+        this.currentText = '';
+
+        const { blockSize, showLineNumbers } = this.settings;
+
+        if (showLineNumbers) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'assembled-code';
+            wrapper.style.margin = '2rem auto 6rem';
+            wrapper.style.maxWidth = 'min(70vw, 900px)';
+            wrapper.style.fontSize = `${blockSize + 2}px`;
+            wrapper.style.lineHeight = '1.6';
+
+            this.lineNumbersEl = document.createElement('pre');
+            this.lineNumbersEl.className = 'line-numbers';
+            this.lineNumbersEl.textContent = '1';
+
+            const codePane = document.createElement('pre');
+            codePane.className = 'code-content';
+            codePane.style.fontFamily = `'Consolas', monospace`;
+            codePane.style.fontSize = `${blockSize + 2}px`;
+            codePane.style.lineHeight = '1.6';
+            codePane.style.margin = '0';
+            codePane.style.padding = '0';
+            codePane.style.whiteSpace = 'pre-wrap';
+            codePane.style.wordBreak = 'break-word';
+            codePane.style.background = 'transparent';
+
+            this.textContainer = document.createElement('span');
+            codePane.appendChild(this.textContainer);
+
+            this.cursor = document.createElement('span');
+            this.cursor.className = 'typing-cursor';
+            codePane.appendChild(this.cursor);
+
+            wrapper.appendChild(this.lineNumbersEl);
+            wrapper.appendChild(codePane);
+
+            this.container = wrapper;
+        } else {
+            const pre = document.createElement('pre');
+            pre.style.cssText = `
+                padding: 2rem;
+                font-family: 'Consolas', monospace;
+                font-size: ${blockSize + 2}px;
+                color: #f1f5f9;
+                line-height: 1.6;
+                white-space: pre-wrap;
+                max-width: min(70vw, 900px);
+                margin: 2rem auto 6rem;
+            `;
+
+            this.textContainer = document.createElement('span');
+            pre.appendChild(this.textContainer);
+
+            this.cursor = document.createElement('span');
+            this.cursor.className = 'typing-cursor';
+            pre.appendChild(this.cursor);
+
+            this.container = pre;
+        }
+
         elements.container.appendChild(this.container);
         setScrollable(true);
 
-        const cursor = document.createElement('span');
-        cursor.className = 'typing-cursor';
-        this.container.appendChild(cursor);
+        this.updateDisplay();
 
         const chars = this.code.split('');
         const delay = 50 / (this.settings.speed * 10); // 10x faster
@@ -376,17 +470,20 @@ class TypingAnimation {
             if (this.stopped) break;
             
             const shouldFollow = this.shouldAutoScroll();
-            const text = document.createTextNode(chars[i]);
-            this.container.insertBefore(text, cursor);
+            this.currentText += chars[i];
+            this.updateDisplay();
 
             if (shouldFollow) {
-                this.scrollToCursor(cursor);
+                this.scrollToCursor(this.cursor);
             }
             
             await new Promise(resolve => setTimeout(resolve, delay));
         }
 
-        cursor.remove();
+        if (this.cursor) {
+            this.cursor.remove();
+            this.cursor = null;
+        }
     }
 
     shouldAutoScroll() {
@@ -417,8 +514,31 @@ class TypingAnimation {
         this.stopped = true;
         if (this.container) {
             this.container.remove();
+            this.container = null;
         }
+        this.textContainer = null;
+        this.lineNumbersEl = null;
+        this.cursor = null;
+        this.currentText = '';
         setScrollable(false);
+    }
+
+    updateDisplay() {
+        if (!this.textContainer) {
+            return;
+        }
+
+        const source = this.currentText;
+
+        if (this.settings.syntaxHighlight) {
+            this.textContainer.innerHTML = highlightCodeSnippet(source);
+        } else {
+            this.textContainer.textContent = source;
+        }
+
+        if (this.settings.showLineNumbers && this.lineNumbersEl) {
+            this.lineNumbersEl.textContent = buildLineNumbers(source);
+        }
     }
 }
 
