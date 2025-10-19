@@ -109,13 +109,11 @@ Windows packaging uses Electron Builder. After running `npm install`:
 # Generate installers (.exe NSIS, .exe Portable, .msi) with commit hash
 npm run build:win
 
-# dist/ now contains all installer formats:
+# dist/ now contains all installer formats (x64 architecture):
 # ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (NSIS - Installer)
 # ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (Portable - Standalone)
-# ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (NSIS - 32-bit)
-# ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (Portable - 32-bit)
-# ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.msi (MSI - 64-bit)
-# └─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.msi (MSI - 32-bit)
+# ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.msi (MSI - Enterprise)
+# └─ (other generated artifacts like .blockmap files)
 ```
 
 **Installer formats:**
@@ -125,9 +123,9 @@ npm run build:win
 
 **Release checklist:**
 
-1. ✅ Confirm all installer formats are generated (NSIS, Portable, MSI for x64 and ia32)
+1. ✅ Confirm all installer formats are generated (NSIS, Portable, MSI for x64)
 2. ✅ Inspect installer UIs (icons, product names, versions)
-3. ✅ Smoke test: install/uninstall/run on clean Windows VMs (test at least x64 version)
+3. ✅ Smoke test: install/uninstall/run on clean Windows VM
 4. ✅ Verify NSIS creates Start Menu shortcuts and desktop shortcuts
 5. ✅ Verify MSI integrates with Windows Add/Remove Programs
 6. ✅ (Optional) Sign artifacts with `signtool` and re-test

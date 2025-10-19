@@ -107,13 +107,11 @@ npx @chahuadev/code-animator --presentation
 # สร้างตัวติดตั้ง Windows ทั้ง 3 ประเภท (NSIS, Portable, MSI) พร้อม hash ของ commit
 npm run build:win
 
-# dist/ จะได้ไฟล์ที่มีรหัส commit กำกับ เช่น
-#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (ติดตั้ง NSIS - 64 บิต)
-#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (Portable - 64 บิต)
-#  ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (ติดตั้ง NSIS - 32 บิต)
-#  ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (Portable - 32 บิต)
-#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.msi (MSI - 64 บิต)
-#  └─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.msi (MSI - 32 บิต)
+# dist/ จะได้ไฟล์ที่มีรหัส commit กำกับ (สถาปัตยกรรม x64) เช่น
+#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (ติดตั้ง NSIS)
+#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (Portable - สแตนด์โลน)
+#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.msi (MSI - องค์กร)
+#  └─ (ไฟล์อื่นๆ เช่น .blockmap)
 ```
 
 **ประเภทของไฟล์ติดตั้ง:**
@@ -123,9 +121,9 @@ npm run build:win
 
 **เช็กลิสต์ก่อนปล่อยรุ่น:**
 
-1. ✅ ตรวจสอบว่าได้ไฟล์ติดตั้งทั้ง 3 ประเภท (NSIS, Portable, MSI) สำหรับ x64 และ ia32
+1. ✅ ตรวจสอบว่าได้ไฟล์ติดตั้งทั้ง 3 ประเภท (NSIS, Portable, MSI) สำหรับ x64
 2. ✅ เปิดตัวติดตั้งเพื่อดูไอคอน ชื่อผลิตภัณฑ์ และเวอร์ชัน
-3. ✅ ทดลองติดตั้ง/ถอนการติดตั้ง/รันบน Windows VM ใหม่ (ทดสอบอย่างน้อย x64)
+3. ✅ ทดลองติดตั้ง/ถอนการติดตั้ง/รันบน Windows VM ใหม่
 4. ✅ ตรวจสอบว่า NSIS สร้าง Start Menu shortcuts และ desktop shortcuts
 5. ✅ ตรวจสอบว่า MSI สามารถเพิ่มเข้า Windows Add/Remove Programs
 6. ✅ (ตัวเลือก) เซ็นไฟล์ด้วย `signtool` แล้วทดสอบอีกครั้ง
