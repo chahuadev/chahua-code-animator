@@ -32,7 +32,6 @@
     "url": "git+https://github.com/chahuadev/chahua-code-animator.git"
   },
   "files": [
-    "assets/",
     "cli.js",
     "main.js",
     "package.json",
@@ -82,7 +81,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Chahua Code Animator"
+      "shortcutName": "Chahua Code Animator",
+      "include": "build/installer.nsh"
     },
     "msi": {
       "oneClick": false,
