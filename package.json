@@ -4,13 +4,18 @@
   "type": "module",
   "description": "Professional code animation and visualization tool with enterprise-grade security",
   "main": "main.js",
+  "bin": {
+    "chahua-code-animator": "cli.js"
+  },
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
     "build": "electron-builder",
-    "build:win": "electron-builder --win",
+    "build:win": "powershell -NoProfile -Command \"$env:COMMIT_HASH=(git rev-parse --short HEAD); electron-builder --win --publish never\"",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
+    "dist:win": "powershell -NoProfile -Command \"$env:COMMIT_HASH=(git rev-parse --short HEAD); npm run dist:win:exec; node workspace/collect-release-metrics.js windows\"",
+    "dist:win:exec": "electron-builder --win --publish never",
     "test": "node test/security-test.js"
   },
   "keywords": [
@@ -26,9 +31,20 @@
     "type": "git",
     "url": "https://github.com/chahuadev/chahua-code-animator.git"
   },
+  "files": [
+    "assets/",
+    "cli.js",
+    "main.js",
+    "package.json",
+    "preload.js",
+    "renderer/",
+    "security-core.js",
+    "workspace/"
+  ],
   "build": {
     "appId": "com.chahuadev.code-animator",
     "productName": "Chahua Code Animator",
+    "artifactName": "${productName}-${version}-${os}-${arch}-${env.COMMIT_HASH}.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -41,6 +57,14 @@
     "win": {
       "target": ["nsis", "portable"],
       "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "msi": true
     },
     "mac": {
       "target": ["dmg", "zip"],

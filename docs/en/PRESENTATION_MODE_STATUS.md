@@ -35,15 +35,54 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 > - Implemented pointer-pass-through on navigation capsule and click-to-advance gestures outside the slide body.
 > - Compressed long bullet text automatically while preserving full hover tooltips for auditors.
 
-- [x] Provide scrollable blocks/agenda lists without breaking slide proportions.
-- [x] Adjust click hit-testing so interactions inside slide content do not trigger unintended navigation.
-- [ ] Add light/dark theme variants and per-slide accent colours.
-- [ ] Localise UI strings (Thai/English) for presentation controls.
+#### Fixed Stage Layout Action Plan
+- [ ] Define a canonical stage size (e.g. 1920×1080 logical pixels at 16:9) and render all slide content inside this stage only.
+- [ ] Wrap the stage in a responsive viewport that scales the entire presentation via `transform: scale(...)` (or CSS `zoom`) based on available window space while preserving the aspect ratio.
+- [ ] Keep navigation HUD, overlays, and click targets anchored to the stage boundaries; remove layout assumptions that rely on viewport height/width directly.
+- [ ] Add safe padding and background treatment around the stage so excess screen space shows letter/pillar boxing rather than stretched UI elements.
+- [ ] Validate behaviour across common resolutions (1280×720, 1920×1080, 3840×2160) and window resizing to ensure content remains fully visible.
+- [ ] Update regression plan to include visual snapshots that confirm the stage borders remain aligned with the display frame.
 
-### Phase 5: File Management & Data Integrity (In Progress)
+#### Settings Panel Separation Plan (Typing vs Presentation)
+- [ ] Audit `renderer/scripts/main.js` to detach the shared Settings card from the Animation Style selector so each mode controls only its own inputs.
+- [ ] Build a dedicated Presentation settings group (auto-loop, autoplay speed, summarisation strength) and isolate Typing parameters (character speed, block size, lines per block).
+- [ ] Refactor state handling so switching styles swaps settings panes without leaking values or labels between modes.
+- [ ] Update `renderer/index.html` structure and `renderer/styles/main.css` layout to present the panels side-by-side while keeping a cohesive visual hierarchy.
+- [ ] Adjust IPC/bridge messages so only the active mode’s configuration is sent to `renderer/scripts/animation.js`.
+- [ ] Document the new per-mode settings contract in README and this status report once implemented.
+
+> **Settings status:** Shared Settings currently function at roughly **70%** completeness—Typing mode reacts correctly, while Presentation-specific controls are only partially wired. Completing the plan above will remove the coupling and stabilise future feature work.
+> **Expected outcome:** Clearer UX (no shared sliders that do nothing), reduced cross-mode bugs, easier addition of Presentation-only options.
+> **Risks:** Requires coordinated UI + IPC refactor; potential regression if old preferences depend on shared keys. Mitigate by smoke-testing both modes and keeping legacy keys aliased during migration.
+
+- [ ] Localise UI strings (Thai/English) for presentation controls.
 - [ ] Restore "Browse Files" button alignment/hit-area to guarantee file dialog reliability after layout changes.
 - [ ] Persist last-opened Markdown path and remember preferred animation style across sessions.
 - [ ] Validate Markdown payload size and provide friendly errors when parsing fails.
+
+#### Security Hardening Status (security-core.js)
+- **Current coverage:** ~85% of the desktop safety contract is live (path traversal, symlink depth, file-size validation, SHA-256 integrity, rate limiting) for both Typing and Presentation flows.
+- [x] Enforce path traversal, symlink depth, and file-size checks before Presentation or Typing playback (blocks invalid Markdown immediately).
+- [x] Maintain SHA-256 integrity verification and rate limiting telemetry during Markdown ingestion.
+- [ ] Extend `security-core` audit logs to record presentation-mode lifecycle events (load, reject, autoplay start/stop) for traceability.
+- [ ] Surface security-core verdicts inside the Presentation window (non-blocking toast + “View log” link when a file is rejected).
+- [ ] Add automated Jest coverage around Markdown validation (valid/invalid paths, oversize files, tampered hashes) and ensure CI blocks on failure.
+- [ ] Document the security pipeline (README + README.th) with a flow diagram showing how Presentation mode calls security-core.
+- [ ] Evaluate additional sanitisation for inline Markdown links/images before rendering; strip remote URLs until sanitiser reaches parity.
+- [ ] Define release exit criteria: Presentation mode cannot ship until 100% of the above items pass automated checks and manual QA on Windows + macOS.
+
+#### Desktop Packaging & Distribution Plan (MSI / EXE / npm)
+- [x] Maintain Electron Builder configuration for Windows builds (`npm run dist:win`).
+- [x] Enable `msi: true` in builder config and verify `.msi` output alongside `.exe` installers.
+- [x] Document installer steps (signing, icon verification, smoke test install/uninstall) in both READMEs.
+- [x] Automate build artifact naming to include presentation-mode version and commit hash for traceability.
+- [x] Record installer size and first-run telemetry in this status report every release cycle.
+- [x] Prepare npm distribution channel: trim package payload, define `bin` entry for the desktop launcher, and gate publish behind CI.
+- [x] Publish npm beta, validate `npx chahua-code-animator --presentation` workflow, and document install commands in both READMEs.
+- [x] Capture npm install metrics (download counts, failure rates) and log alongside MSI telemetry each release.
+- [x] Establish release gate: no MSI/EXE/npm publish until presentation-mode + security tasks hit 100% completion.
+
+> **Latest packaging updates:** `package.json` now injects `COMMIT_HASH` during `npm run dist:win`, enabling commit-tagged artifact names while the NSIS builder emits both `.exe` and `.msi` installers. The CLI (`chahua-code-animator`) ships on npm with `npx` support, build metrics land in `workspace/telemetry/installer-metrics.json`, and first-run telemetry captures desktop vs. npm launch channels automatically.
 
 ### Phase 6: Advanced Presentation Features (Not Started)
 - [ ] Introduce timeline scripting (auto-advance per-slide timers, speaker notes overlay).
@@ -70,6 +109,10 @@ The table below highlights key files that enable Presentation Mode.
 
 ### Diagnostics & Tooling
 - [x] `workspace/inspect-slides.cjs` — CLI helper to inspect generated slide models for QA without launching Electron.
+- [x] `workspace/collect-release-metrics.js` — Post-build script that logs installer sizes, commit hash, and platform metadata into `workspace/telemetry/installer-metrics.json`.
+
+### Distribution Utilities
+- [x] `cli.js` — npm CLI entry that launches the Electron app (`chahua-code-animator --presentation`) and tags telemetry as `npm-cli` for first-run tracking.
 
 ### Pending or Planned
 - [ ] `renderer/styles/themes/presentation-light.css` *(planned)* — Dedicated light theme skin.

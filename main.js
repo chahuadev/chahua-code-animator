@@ -32,6 +32,51 @@ let mainWindow;
 let animationWindow;
 
 // ══════════════════════════════════════════════════════════════════════════════
+//                         Telemetry Helpers
+// ══════════════════════════════════════════════════════════════════════════════
+
+function recordAppLaunchTelemetry() {
+    try {
+        const telemetryDir = path.join(__dirname, 'workspace', 'telemetry');
+        if (!fs.existsSync(telemetryDir)) {
+            fs.mkdirSync(telemetryDir, { recursive: true });
+        }
+
+        const logFile = path.join(telemetryDir, 'first-run-log.json');
+        let entries = [];
+
+        if (fs.existsSync(logFile)) {
+            try {
+                const raw = fs.readFileSync(logFile, 'utf8');
+                entries = JSON.parse(raw);
+            } catch (parseError) {
+                console.warn('[Telemetry] Existing log unreadable, resetting telemetry store.', parseError.message);
+                entries = [];
+            }
+        }
+
+        if (!Array.isArray(entries)) {
+            entries = [];
+        }
+
+        const isFirstRun = entries.length === 0;
+        entries.push({
+            event: isFirstRun ? 'first-run' : 'app-launch',
+            channel: process.env.CHAHAUA_LAUNCH_CHANNEL || 'desktop',
+            timestamp: new Date().toISOString()
+        });
+
+        fs.writeFileSync(logFile, JSON.stringify(entries, null, 2));
+
+        if (isFirstRun) {
+            console.log('[Telemetry] First-run event recorded.');
+        }
+    } catch (error) {
+        console.warn('[Telemetry] Unable to write first-run log:', error.message);
+    }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 //                         Window Management
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -294,6 +339,7 @@ ipcMain.handle('security:exportLog', async () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 app.whenReady().then(() => {
+    recordAppLaunchTelemetry();
     createMainWindow();
 
     app.on('activate', () => {
