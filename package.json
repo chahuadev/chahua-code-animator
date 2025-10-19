@@ -53,6 +53,9 @@
       "!test/**/*",
       "!logs/**/*"
     ],
+    "extraFiles": [
+      "workspace/"
+    ],
     "win": {
       "target": [
         {
@@ -82,7 +85,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Chahua Code Animator",
-      "include": "build/installer.nsh"
+      "include": "installer/installer.nsh"
     },
     "msi": {
       "oneClick": false,

@@ -31,13 +31,38 @@ const securityManager = new SecurityManager({
 let mainWindow;
 let animationWindow;
 
+// Per-user workspace (created under Electron's userData path)
+let userWorkspace;
+
+function ensureUserWorkspace() {
+    try {
+        const userDataDir = app.getPath && app.getPath('userData') ? app.getPath('userData') : path.join(__dirname, 'user_data');
+        userWorkspace = path.join(userDataDir, 'workspace');
+        if (!fs.existsSync(userWorkspace)) {
+            fs.mkdirSync(userWorkspace, { recursive: true });
+        }
+        // ensure placeholder exists
+        const keep = path.join(userWorkspace, '.keep');
+        if (!fs.existsSync(keep)) {
+            fs.writeFileSync(keep, '');
+        }
+    } catch (err) {
+        console.warn('[Workspace] Could not ensure user workspace:', err.message);
+        // fallback to packaged workspace
+        userWorkspace = path.join(__dirname, 'workspace');
+        if (!fs.existsSync(userWorkspace)) {
+            try { fs.mkdirSync(userWorkspace, { recursive: true }); } catch (e) {}
+        }
+    }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //                         Telemetry Helpers
 // ══════════════════════════════════════════════════════════════════════════════
 
 function recordAppLaunchTelemetry() {
     try {
-        const telemetryDir = path.join(__dirname, 'workspace', 'telemetry');
+        const telemetryDir = path.join(userWorkspace || path.join(__dirname, 'workspace'), 'telemetry');
         if (!fs.existsSync(telemetryDir)) {
             fs.mkdirSync(telemetryDir, { recursive: true });
         }
@@ -172,7 +197,7 @@ function createAnimationWindow() {
 // File Selection Handler
 ipcMain.handle('dialog:openFile', async () => {
     try {
-        const workspaceDir = path.join(__dirname, 'workspace');
+        const workspaceDir = userWorkspace || path.join(__dirname, 'workspace');
         
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile'],
@@ -339,6 +364,7 @@ ipcMain.handle('security:exportLog', async () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 app.whenReady().then(() => {
+    ensureUserWorkspace();
     recordAppLaunchTelemetry();
     createMainWindow();
 
