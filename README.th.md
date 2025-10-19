@@ -52,12 +52,12 @@ npm start
 ติดตั้งจาก npm โดยไม่ต้องโคลนโปรเจ็กต์:
 
 ```powershell
-# ติดตั้งแบบ global
-npm install -g chahua-code-animator
+# ติดตั้งแบบ global (คำสั่งที่ได้คือ `chahua-code-animator`)
+npm install -g @chahuadev/code-animator
 chahua-code-animator --presentation
 
 # หรือสั่งรันครั้งเดียว
-npx chahua-code-animator --presentation
+npx @chahuadev/code-animator --presentation
 ```
 
 คำสั่ง CLI จะเปิดแอป Electron จากแพ็กเกจ npm และบันทึก telemetry เป็นช่องทาง `npm-cli` สำหรับสถิติการใช้งานครั้งแรก พารามิเตอร์เพิ่มเติมหลังคำสั่งจะถูกส่งต่อให้โปรเซส Electron โดยตรง
@@ -116,3 +116,12 @@ npm run dist:win
 - แจ้งปัญหา: https://github.com/chahuadev/chahua-code-animator/issues
 
 สัญญาอนุญาต MIT – ดูรายละเอียดในไฟล์ [LICENSE](LICENSE)
+
+---
+
+## เอกสารทางการ (ภาษาอังกฤษ)
+
+- [Code of Conduct](docs/en/CODE_OF_CONDUCT.md)
+- [Contributing Guide](docs/en/CONTRIBUTING.md)
+- [Security Policy](docs/en/SECURITY_POLICY.md)
+- [Support Guidelines](docs/en/SUPPORT.md)

@@ -78,11 +78,11 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 - [x] Automate build artifact naming to include presentation-mode version and commit hash for traceability.
 - [x] Record installer size and first-run telemetry in this status report every release cycle.
 - [x] Prepare npm distribution channel: trim package payload, define `bin` entry for the desktop launcher, and gate publish behind CI.
-- [x] Publish npm beta, validate `npx chahua-code-animator --presentation` workflow, and document install commands in both READMEs.
+- [x] Publish npm beta, validate `npx @chahuadev/code-animator --presentation` workflow, and document install commands in both READMEs.
 - [x] Capture npm install metrics (download counts, failure rates) and log alongside MSI telemetry each release.
 - [x] Establish release gate: no MSI/EXE/npm publish until presentation-mode + security tasks hit 100% completion.
 
-> **Latest packaging updates:** `package.json` now injects `COMMIT_HASH` during `npm run dist:win`, enabling commit-tagged artifact names while the NSIS builder emits both `.exe` and `.msi` installers. The CLI (`chahua-code-animator`) ships on npm with `npx` support, build metrics land in `workspace/telemetry/installer-metrics.json`, and first-run telemetry captures desktop vs. npm launch channels automatically.
+> **Latest packaging updates:** `package.json` now injects `COMMIT_HASH` during `npm run dist:win`, enabling commit-tagged artifact names while the NSIS builder emits both `.exe` and `.msi` installers. The CLI (`@chahuadev/code-animator`) ships on npm with `npx` support, build metrics land in `workspace/telemetry/installer-metrics.json`, and first-run telemetry captures desktop vs. npm launch channels automatically.
 
 ### Phase 6: Advanced Presentation Features (Not Started)
 - [ ] Introduce timeline scripting (auto-advance per-slide timers, speaker notes overlay).

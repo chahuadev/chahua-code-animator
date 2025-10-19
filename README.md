@@ -54,12 +54,12 @@ For packaging, use `npm run build:win|mac|linux` as needed.
 Install the animator without cloning the repo:
 
 ```powershell
-# Global install
-npm install -g chahua-code-animator
+# Global install (provides the `chahua-code-animator` command)
+npm install -g @chahuadev/code-animator
 chahua-code-animator --presentation
 
 # One-off execution
-npx chahua-code-animator --presentation
+npx @chahuadev/code-animator --presentation
 ```
 
 The CLI launches the Electron app from the published package and tags telemetry as `npm-cli` for first-run metrics. Any additional arguments after the command are forwarded to the Electron process.
@@ -118,3 +118,12 @@ Pull requests that improve Presentation mode, safe-frame layout, or testing are 
 - Issues: https://github.com/chahuadev/chahua-code-animator/issues
 
 Licensed under the MIT License. See [LICENSE](LICENSE).
+
+---
+
+## Project policies & documents
+
+- [Code of Conduct](docs/en/CODE_OF_CONDUCT.md)
+- [Contributing Guide](docs/en/CONTRIBUTING.md)
+- [Security Policy](docs/en/SECURITY_POLICY.md)
+- [Support Guidelines](docs/en/SUPPORT.md)

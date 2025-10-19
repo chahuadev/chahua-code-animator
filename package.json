@@ -1,5 +1,5 @@
 {
-  "name": "chahua-code-animator",
+  "name": "@chahuadev/code-animator",
   "version": "1.0.0",
   "type": "module",
   "description": "Professional code animation and visualization tool with enterprise-grade security",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chahuadev/chahua-code-animator.git"
+    "url": "git+https://github.com/chahuadev/chahua-code-animator.git"
   },
   "files": [
     "assets/",
@@ -55,7 +55,10 @@
       "!logs/**/*"
     ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "icon": "assets/icon.ico"
     },
     "nsis": {
@@ -67,12 +70,18 @@
       "msi": true
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "assets/icon.icns",
       "category": "public.app-category.developer-tools"
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "assets/icon.png",
       "category": "Development"
     }
