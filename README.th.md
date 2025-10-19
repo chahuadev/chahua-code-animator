@@ -99,26 +99,37 @@ npx @chahuadev/code-animator --presentation
 
 ---
 
-## วิธีสร้างไฟล์ติดตั้ง (Windows EXE / MSI)
+## วิธีสร้างไฟล์ติดตั้ง (Windows EXE / MSI / Portable)
 
 โปรเจ็กต์ใช้ Electron Builder ในการสร้างตัวติดตั้ง:
 
 ```powershell
-# สร้างตัวติดตั้ง Windows (.exe และ .msi พร้อม hash ของ commit)
+# สร้างตัวติดตั้ง Windows ทั้ง 3 ประเภท (NSIS, Portable, MSI) พร้อม hash ของ commit
 npm run build:win
 
 # dist/ จะได้ไฟล์ที่มีรหัส commit กำกับ เช่น
-#  ├─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.exe
-#  └─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.msi
+#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (ติดตั้ง NSIS - 64 บิต)
+#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (Portable - 64 บิต)
+#  ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (ติดตั้ง NSIS - 32 บิต)
+#  ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (Portable - 32 บิต)
+#  ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.msi (MSI - 64 บิต)
+#  └─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.msi (MSI - 32 บิต)
 ```
+
+**ประเภทของไฟล์ติดตั้ง:**
+- **NSIS (.exe):** ติดตั้งแบบดั้งเดิมของ Windows พร้อมวิซาร์ด setup, registry entries, และการถอนการติดตั้ง
+- **Portable (.exe):** ไฟล์ .exe แบบสแตนด์โลน ที่สามารถรันได้โดยไม่ต้องติดตั้ง
+- **MSI (.msi):** รูปแบบ Windows Installer เพื่อการปรับใช้ในองค์กรและ Group Policy integration
 
 **เช็กลิสต์ก่อนปล่อยรุ่น:**
 
-1. ✅ ตรวจสอบว่าได้ทั้ง `.exe` และ `.msi`
+1. ✅ ตรวจสอบว่าได้ไฟล์ติดตั้งทั้ง 3 ประเภท (NSIS, Portable, MSI) สำหรับ x64 และ ia32
 2. ✅ เปิดตัวติดตั้งเพื่อดูไอคอน ชื่อผลิตภัณฑ์ และเวอร์ชัน
-3. ✅ ทดลองติดตั้ง/ถอนการติดตั้งบน Windows VM ใหม่
-4. ✅ (ตัวเลือก) เซ็นไฟล์ด้วย `signtool` แล้วทดสอบอีกครั้ง
-5. ✅ บันทึกข้อมูลสถิติในไฟล์ `workspace/telemetry/installer-metrics.json`
+3. ✅ ทดลองติดตั้ง/ถอนการติดตั้ง/รันบน Windows VM ใหม่ (ทดสอบอย่างน้อย x64)
+4. ✅ ตรวจสอบว่า NSIS สร้าง Start Menu shortcuts และ desktop shortcuts
+5. ✅ ตรวจสอบว่า MSI สามารถเพิ่มเข้า Windows Add/Remove Programs
+6. ✅ (ตัวเลือก) เซ็นไฟล์ด้วย `signtool` แล้วทดสอบอีกครั้ง
+7. ✅ บันทึกข้อมูลสถิติในไฟล์ `workspace/telemetry/installer-metrics.json`
 
 > **หมายเหตุ:** โฟลเดอร์ `workspace/` จะถูกสร้างโดยอัตโนมัติเมื่อรันแอปเป็นครั้งแรก ตรวจสอบให้แน่ใจว่ามีโฟลเดอร์นี้ในตำแหน่งการติดตั้ง เพื่อเก็บข้อมูล telemetry และไฟล์ผู้ใช้
 

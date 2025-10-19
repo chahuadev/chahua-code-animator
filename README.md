@@ -101,26 +101,37 @@ The CLI launches the Electron app from the published package and tags telemetry 
 
 ---
 
-## Build installer (MSI / EXE)
+## Build installer (MSI / EXE / Portable)
 
 Windows packaging uses Electron Builder. After running `npm install`:
 
 ```powershell
-# Generate unsigned installer (.exe) and MSI bundle with commit hash
+# Generate installers (.exe NSIS, .exe Portable, .msi) with commit hash
 npm run build:win
 
-# dist/ now contains commit-tagged artifacts, for example:
-# ├─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.exe
-# └─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.msi
+# dist/ now contains all installer formats:
+# ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (NSIS - Installer)
+# ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.exe (Portable - Standalone)
+# ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (NSIS - 32-bit)
+# ├─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.exe (Portable - 32-bit)
+# ├─ Chahua Code Animator-1.1.0-win-x64-a1b2c3d.msi (MSI - 64-bit)
+# └─ Chahua Code Animator-1.1.0-win-ia32-a1b2c3d.msi (MSI - 32-bit)
 ```
+
+**Installer formats:**
+- **NSIS (.exe):** Traditional Windows installer with setup wizard, registry entries, and uninstall support
+- **Portable (.exe):** Standalone executable that runs without installation
+- **MSI (.msi):** Windows Installer format for enterprise deployment and Group Policy integration
 
 **Release checklist:**
 
-1. ✅ Confirm both `.exe` and `.msi` are emitted.
-2. ✅ Inspect the installer UI (icon, product name, version).
-3. ✅ Smoke test: install/uninstall on a clean Windows VM.
-4. ✅ (Optional) Sign artifacts with `signtool` and re-test.
-5. ✅ Record metrics in `workspace/telemetry/installer-metrics.json`.
+1. ✅ Confirm all installer formats are generated (NSIS, Portable, MSI for x64 and ia32)
+2. ✅ Inspect installer UIs (icons, product names, versions)
+3. ✅ Smoke test: install/uninstall/run on clean Windows VMs (test at least x64 version)
+4. ✅ Verify NSIS creates Start Menu shortcuts and desktop shortcuts
+5. ✅ Verify MSI integrates with Windows Add/Remove Programs
+6. ✅ (Optional) Sign artifacts with `signtool` and re-test
+7. ✅ Record metrics in `workspace/telemetry/installer-metrics.json`
 
 > **Note:** The `workspace/` folder is created automatically on first app launch. Ensure it exists in the installation directory for telemetry and user data storage.
 
