@@ -1,0 +1,58 @@
+# Development files
+.gitignore
+.git/
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files and coverage
+test/
+coverage/
+*.test.js
+*.spec.js
+
+# Build and dist files
+dist/
+build/
+node_modules/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Old electron-specific files (not needed for npm package)
+emoji-cleaner.bat
+emoji-cleaner.sh
+
+# Documentation build files
+docs/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor files
+*.sublime-project
+*.sublime-workspace
+
+# Backup files
+backup-*/
+emoji-backup-*/

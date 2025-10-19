@@ -58,18 +58,18 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": ["x64", "ia32"]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": ["x64", "ia32"]
         },
         {
           "target": "msi",
-          "arch": ["x64"]
+          "arch": ["x64", "ia32"]
         }
       ],
-      "icon": "assets/icon.ico",
+  "icon": "logo.png",
       "certificateFile": null,
       "certificatePassword": null,
       "signingHashAlgorithms": ["sha256"],
@@ -94,7 +94,7 @@
         "dmg",
         "zip"
       ],
-      "icon": "assets/icon.icns",
+  "icon": "logo.png",
       "category": "public.app-category.developer-tools"
     },
     "linux": {
@@ -102,7 +102,7 @@
         "AppImage",
         "deb"
       ],
-      "icon": "assets/icon.png",
+  "icon": "logo.png",
       "category": "Development"
     }
   },

@@ -95,7 +95,7 @@ function createMainWindow() {
             webSecurity: true,
             allowRunningInsecureContent: false
         },
-        icon: path.join(__dirname, 'assets', 'icon.png'),
+    icon: path.join(__dirname, '..', 'logo.png'),
         title: 'Chahua Code Animator',
         show: false
     });
