@@ -15,7 +15,7 @@
 - **ความปลอดภัยระดับองค์กร** – ป้องกัน path traversal, ตรวจนามสกุล/ขนาดไฟล์, กัน symlink, จำกัดอัตราการใช้งาน
 - **ผลลัพธ์เชิงตัวเลข** – ชุดสไลด์ 40 หน้าเรนเดอร์ภายใน ~1.2 วินาที, ตัวลดความยาว bullet ลดข้อความเฉลี่ย ~45%, แผง Settings ที่ใช้ร่วมกันทำงานได้ราว 70% (อยู่ระหว่างแยกสำหรับแต่ละโหมด)
 
-อ่านแผนงานล่าสุดได้ที่ [`docs/en/PRESENTATION_MODE_STATUS.md`](docs/en/PRESENTATION_MODE_STATUS.md)
+อ่านแผนงานล่าสุดได้ที่ [`docs/th/PRESENTATION_MODE_STATUS.md`](docs/th/PRESENTATION_MODE_STATUS.md)
 
 ---
 
@@ -32,6 +32,8 @@
 
 ## เริ่มต้นใช้งานอย่างรวดเร็ว
 
+### โหมดพัฒนา
+
 ```powershell
 git clone https://github.com/chahuadev/chahua-code-animator
 cd chahua-code-animator
@@ -39,11 +41,44 @@ npm install
 npm start
 ```
 
-1. เลือกไฟล์ Markdown ตัวอย่าง เช่น `docs/en/BINARY_MIGRATION_STATUS.md`
-2. เลือกโหมด **Presentation** หรือ **Typing**
-3. กด **Play Animation** แล้วควบคุมสไลด์จากหน้าต่าง Electron ได้ทันที
+1. เลือกไฟล์ Markdown ตัวอย่าง เช่น `docs/en/PRESENTATION_MODE_STATUS.md`
+2. เลือกโหมด **Presentation** หรือ **Typing**:
+   - *Presentation*: ย่อสาระจาก Markdown เป็นสไลด์พร้อมหัวข้อ ลูกศร และตัวบ่งชี้ความคืบหน้า
+   - *Typing*: เล่นโค้ดแบบพิมพ์ทีละตัวอักษร ปรับความเร็วและขนาดบล็อกได้
+3. กด **Play Animation** เพื่อเปิดหน้าต่าง Electron พร้อมคำสั่งควบคุม
 
-ต้องการสร้างแพ็กเกจให้ใช้ `npm run build:win`, `npm run build:mac`, หรือ `npm run build:linux`
+### ใช้งานแอปพลิเคชันที่แพ็กเกจแล้ว
+
+หลังจากสร้างด้วย `npm run build:win` ไฟล์ติดตั้งจะอยู่ในโฟลเดอร์ `dist/`:
+
+```powershell
+# ติดตั้ง .exe หรือ .msi
+& ".\dist\Chahua Code Animator-1.0.0-win-x64-{COMMIT_HASH}.exe"
+```
+
+หลังติดตั้ง เปิดแอปจากเมนู Start หรือไอคอนบนเดสก์ท็อป แอปพลิเคชันจะสร้างโฟลเดอร์ `workspace/` โดยอัตโนมัติเมื่อรันครั้งแรก
+
+### ปุ่มลัดในโหมด Presentation
+
+ขณะใช้งานหน้าต่างเล่นสไลด์:
+
+| ปุ่ม | ฟังก์ชัน |
+| --- | --- |
+| <kbd>Space</kbd> หรือ <kbd>→</kbd> | ไปสไลด์ถัดไป |
+| <kbd>←</kbd> หรือ <kbd>Backspace</kbd> | กลับสไลด์ก่อนหน้า |
+| <kbd>H</kbd> | เปิด/ปิดข้อมูลและหน้าช่วยเหลือ |
+| <kbd>R</kbd> | รีเซตไปสไลด์แรก |
+| <kbd>Esc</kbd> | ปิดหน้าต่างเล่น |
+
+### ปุ่มลัดในโหมด Typing
+
+| ปุ่ม | ฟังก์ชัน |
+| --- | --- |
+| <kbd>Space</kbd> | เล่น/หยุด |
+| <kbd>→</kbd> | เลื่อนลงตามบล็อก |
+| <kbd>←</kbd> | เลื่อนขึ้นตามบล็อก |
+| <kbd>R</kbd> | รีเซตแอนิเมชัน |
+| <kbd>Esc</kbd> | ปิดหน้าต่างเล่น |
 
 ---
 
@@ -70,22 +105,22 @@ npx @chahuadev/code-animator --presentation
 
 ```powershell
 # สร้างตัวติดตั้ง Windows (.exe และ .msi พร้อม hash ของ commit)
-npm run dist:win
+npm run build:win
 
 # dist/ จะได้ไฟล์ที่มีรหัส commit กำกับ เช่น
 #  ├─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.exe
 #  └─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.msi
 ```
 
-เช็กลิสต์ก่อนปล่อยรุ่น:
+**เช็กลิสต์ก่อนปล่อยรุ่น:**
 
-1. ตรวจสอบว่าได้ทั้ง `.exe` และ `.msi` (เปิดใช้ `msi: true` ใน config เรียบร้อยแล้ว).
-2. เปิดตัวติดตั้งเพื่อดูไอคอน ชื่อผลิตภัณฑ์ และเวอร์ชันว่าตรงกับที่ระบุ.
-3. ทดลองติดตั้ง/ถอนการติดตั้งบน Windows VM ใหม่ และเก็บหลักฐานผลการทดสอบ.
-4. เซ็นไฟล์ด้วย `signtool` (ถ้ามี certificate) แล้วรันทดสอบซ้ำอีกครั้ง.
-5. บันทึกขนาดไฟล์ติดตั้งและ telemetry ครั้งแรก (ดูได้จาก `workspace/telemetry/installer-metrics.json` และ `workspace/telemetry/first-run-log.json`) ไว้ใน `docs/en/PRESENTATION_MODE_STATUS.md`.
+1. ✅ ตรวจสอบว่าได้ทั้ง `.exe` และ `.msi`
+2. ✅ เปิดตัวติดตั้งเพื่อดูไอคอน ชื่อผลิตภัณฑ์ และเวอร์ชัน
+3. ✅ ทดลองติดตั้ง/ถอนการติดตั้งบน Windows VM ใหม่
+4. ✅ (ตัวเลือก) เซ็นไฟล์ด้วย `signtool` แล้วทดสอบอีกครั้ง
+5. ✅ บันทึกข้อมูลสถิติในไฟล์ `workspace/telemetry/installer-metrics.json`
 
-> **เงื่อนไขการปล่อย:** ห้ามเผยแพร่ MSI/EXE จนกว่าแผนงาน Presentation mode และ security จะทำเสร็จ 100% ตามรายงานสถานะ
+> **หมายเหตุ:** โฟลเดอร์ `workspace/` จะถูกสร้างโดยอัตโนมัติเมื่อรันแอปเป็นครั้งแรก ตรวจสอบให้แน่ใจว่ามีโฟลเดอร์นี้ในตำแหน่งการติดตั้ง เพื่อเก็บข้อมูล telemetry และไฟล์ผู้ใช้
 
 ---
 
@@ -110,7 +145,7 @@ npm run dist:win
 
 ## มีส่วนร่วม / ขอความช่วยเหลือ
 
-ต้องการช่วยปรับโหมด Presentation, ระบบ safe frame หรือการทดสอบ เชิญส่ง Pull Request ได้เลย ตรวจสอบแผนงานก่อนที่ [`docs/en/PRESENTATION_MODE_STATUS.md`](docs/en/PRESENTATION_MODE_STATUS.md) เพื่อให้งานตรงทิศทาง
+ต้องการช่วยปรับโหมด Presentation, ระบบ safe frame หรือการทดสอบ เชิญส่ง Pull Request ได้เลย ตรวจสอบแผนงานก่อนที่ [`docs/th/PRESENTATION_MODE_STATUS.md`](docs/th/PRESENTATION_MODE_STATUS.md) เพื่อให้งานตรงทิศทาง
 
 - อีเมล: chahuadev@gmail.com
 - แจ้งปัญหา: https://github.com/chahuadev/chahua-code-animator/issues
@@ -125,3 +160,10 @@ npm run dist:win
 - [Contributing Guide](docs/en/CONTRIBUTING.md)
 - [Security Policy](docs/en/SECURITY_POLICY.md)
 - [Support Guidelines](docs/en/SUPPORT.md)
+
+## เอกสารทางการ (ภาษาไทย)
+
+- [จรรยาบรรณของชุมชน](docs/th/CODE_OF_CONDUCT.md)
+- [คู่มือการมีส่วนร่วม](docs/th/CONTRIBUTING.md)
+- [นโยบายความปลอดภัย](docs/th/SECURITY_POLICY.md)
+- [คู่มือการสนับสนุน](docs/th/SUPPORT.md)

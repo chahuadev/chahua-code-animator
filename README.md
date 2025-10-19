@@ -34,6 +34,8 @@ See the active development roadmap in [`docs/en/PRESENTATION_MODE_STATUS.md`](do
 
 ## Quick start
 
+### Development mode
+
 ```powershell
 git clone https://github.com/chahuadev/chahua-code-animator
 cd chahua-code-animator
@@ -41,11 +43,44 @@ npm install
 npm start
 ```
 
-1. Load a Markdown status file (`docs/en/BINARY_MIGRATION_STATUS.md` works as a sample).
-2. Pick **Presentation** or **Typing**. Presentation auto-summarises slides; Typing uses configurable speed/block settings.
-3. Hit **Play Animation**. The Electron animation window opens with navigation controls and keyboard shortcuts.
+1. Load a Markdown status file (e.g., `docs/en/PRESENTATION_MODE_STATUS.md`).
+2. Pick **Presentation** or **Typing**:
+   - *Presentation:* Auto-summarises Markdown into slides with structural headings, bullet lists, and progress indicators.
+   - *Typing:* Character-by-character playback of raw source files with adjustable speed and block size.
+3. Hit **Play Animation** to open the Electron playback window with navigation controls.
 
-For packaging, use `npm run build:win|mac|linux` as needed.
+### Using the packaged application
+
+After building with `npm run build:win`, the installers are located in `dist/`:
+
+```powershell
+# Install the .exe or .msi
+& ".\dist\Chahua Code Animator-1.0.0-win-x64-{COMMIT_HASH}.exe"
+```
+
+Once installed, launch the app from the Start menu or desktop shortcut. The application automatically creates a `workspace/` folder on first run for storing user files.
+
+### Keyboard shortcuts in Presentation mode
+
+Once inside the playback window:
+
+| Key | Action |
+| --- | --- |
+| <kbd>Space</kbd> or <kbd>→</kbd> | Next slide |
+| <kbd>←</kbd> or <kbd>Backspace</kbd> | Previous slide |
+| <kbd>H</kbd> | Toggle info/help overlay |
+| <kbd>R</kbd> | Reset to first slide |
+| <kbd>Esc</kbd> | Close playback window |
+
+### Keyboard shortcuts in Typing mode
+
+| Key | Action |
+| --- | --- |
+| <kbd>Space</kbd> | Play/pause animation |
+| <kbd>→</kbd> | Scroll down block by block |
+| <kbd>←</kbd> | Scroll up block by block |
+| <kbd>R</kbd> | Reset animation |
+| <kbd>Esc</kbd> | Close playback window |
 
 ---
 
@@ -71,23 +106,23 @@ The CLI launches the Electron app from the published package and tags telemetry 
 Windows packaging uses Electron Builder. After running `npm install`:
 
 ```powershell
-# Generate unsigned installer (.exe) and MSI bundle
-npm run dist:win
+# Generate unsigned installer (.exe) and MSI bundle with commit hash
+npm run build:win
 
 # dist/ now contains commit-tagged artifacts, for example:
 # ├─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.exe
 # └─ Chahua Code Animator-1.0.0-win-x64-a1b2c3d.msi
 ```
 
-Release checklist that runs after the command above:
+**Release checklist:**
 
-1. Confirm both `.exe` and `.msi` are emitted (the build config enables NSIS `msi: true`).
-2. Inspect the installer UI to verify the icon, product name, and version metadata.
-3. Perform a smoke test install/uninstall on a clean Windows VM and capture screenshots/evidence.
-4. Sign the artifacts with `signtool` (recommended before distribution) and re-run the smoke test.
-5. Record installer size and first-run telemetry readings (see `workspace/telemetry/installer-metrics.json` and `workspace/telemetry/first-run-log.json`) in `docs/en/PRESENTATION_MODE_STATUS.md`.
+1. ✅ Confirm both `.exe` and `.msi` are emitted.
+2. ✅ Inspect the installer UI (icon, product name, version).
+3. ✅ Smoke test: install/uninstall on a clean Windows VM.
+4. ✅ (Optional) Sign artifacts with `signtool` and re-test.
+5. ✅ Record metrics in `workspace/telemetry/installer-metrics.json`.
 
-> **Release gate:** Do not publish the MSI/EXE artifacts until Presentation mode and security tasks reach 100% completion per the status report.
+> **Note:** The `workspace/` folder is created automatically on first app launch. Ensure it exists in the installation directory for telemetry and user data storage.
 
 ---
 
@@ -123,7 +158,14 @@ Licensed under the MIT License. See [LICENSE](LICENSE).
 
 ## Project policies & documents
 
+**English (EN):**
 - [Code of Conduct](docs/en/CODE_OF_CONDUCT.md)
 - [Contributing Guide](docs/en/CONTRIBUTING.md)
 - [Security Policy](docs/en/SECURITY_POLICY.md)
 - [Support Guidelines](docs/en/SUPPORT.md)
+
+**Thai (ไทย):**
+- [Code of Conduct](docs/th/CODE_OF_CONDUCT.md)
+- [Contributing Guide](docs/th/CONTRIBUTING.md)
+- [Security Policy](docs/th/SECURITY_POLICY.md)
+- [Support Guidelines](docs/th/SUPPORT.md)
