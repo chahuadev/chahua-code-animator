@@ -366,6 +366,31 @@ body.presentation-mode #animationContainer {
     box-sizing: border-box;
 }
 
+/* Ensure inner blocks and agenda expand to use available stage height
+   without adding visual overlays. This keeps content inside the fixed
+   .presentation-stage and allows lists/blocks to grow and scroll when needed. */
+.presentation-stage .slide-inner {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.presentation-stage .slide-blocks,
+.presentation-stage .slide-agenda {
+    /* allow these sections to grow and use remaining vertical space */
+    flex: 1 1 auto !important;
+    max-height: none !important;
+    overflow: auto !important;
+}
+
+.presentation-stage .slide-blocks {
+    /* ensure grid can shrink/grow inside the flex area */
+    min-height: 0;
+}
+
+.presentation-stage .slide-agenda {
+    min-height: 0;
+}
+
 .presentation-slide {
     position: absolute;
     inset: 0;
