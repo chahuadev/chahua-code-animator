@@ -2,6 +2,13 @@
 //  Chahua Code Animator - Presentation Utilities
 //  Markdown ➜ Slide Data Transformation Helpers
 // ══════════════════════════════════════════════════════════════════════════════
+// ! ══════════════════════════════════════════════════════════════════════════════
+// !  บริษัท ชาหัว ดีเวลลอปเมนต์ จำกัด (Chahua Development Co., Ltd.)
+// !  Repository: https://github.com/chahuadev/chahua-code-animator.git
+// !  Version: 1.1.0
+// !  License: MIT
+// !  Contact: chahuadev@gmail.com
+// ! ══════════════════════════════════════════════════════════════════════════════
 
 (function () {
     'use strict';

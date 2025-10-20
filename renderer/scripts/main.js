@@ -3,7 +3,7 @@
 // ! ══════════════════════════════════════════════════════════════════════════════
 // !  บริษัท ชาหัว ดีเวลลอปเมนต์ จำกัด (Chahua Development Co., Ltd.)
 // !  Repository: https://github.com/chahuadev/chahua-code-animator.git
-// !  Version: 1.0.0
+// !  Version: 1.1.0
 // !  License: MIT
 // !  Contact: chahuadev@gmail.com
 // ! ══════════════════════════════════════════════════════════════════════════════
