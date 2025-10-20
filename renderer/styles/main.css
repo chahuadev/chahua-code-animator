@@ -504,12 +504,15 @@ body {
 }
 
 .settings-panel {
+    display: none;
     background: rgba(9, 22, 44, 0.9);
     border: 1px solid rgba(56, 217, 255, 0.18);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: 0 14px 32px rgba(5, 12, 28, 0.55);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .settings-panel-header {
@@ -539,6 +542,9 @@ body {
 }
 
 .settings-panel.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
     border-color: rgba(56, 217, 255, 0.6);
     box-shadow: var(--shadow-glow);
 }
@@ -549,11 +555,6 @@ body {
     gap: 0.25rem;
 }
 
-.settings-panel:not(.active) {
-    opacity: 0.6;
-    filter: saturate(0.7);
-    pointer-events: none;
-}
 
 .settings-group {
     display: flex;
