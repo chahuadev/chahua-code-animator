@@ -43,7 +43,8 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 > **Patch (20 October 2025):**
 > - [x] Applied a small, targeted CSS fix in `renderer/styles/animation.css` to address an empty lower area seen on some agenda slides (notably Slides 2 and 3). The change makes `.presentation-stage .slide-inner` a column flex container and allows `.slide-blocks` and `.slide-agenda` to flex-grow and use the available stage height. No visual overlays or pseudo panels were added — this is a layout-only change to let content fill the fixed stage.
 > - [x] Updated `renderer/scripts/animation.js` to wrap slides in a fixed 1100×620 stage and scale that stage to the viewport, keeping navigation HUD and click targets anchored even when the window resizes.
-> - [x] Split Typing vs. Presentation settings into dedicated panels, persisted per-mode preferences, and added presentation autoplay cadence controls (speed, per-slide duration, loop/bounce/once modes) to unlock richer playback tuning before future feature work.
+> - [x] Split Typing vs. Presentation settings into dedicated panels, persisted per-mode preferences, and added presentation autoplay cadence controls (speed, per-slide duration, loop/bounce/once modes) to unlock richer playback tuning before future feature work. Inactive panels now remain fully hidden so the active mode owns the entire settings card.
+> - [x] Reworked the workspace guidance card: the quick-start checklist now stays collapsed behind a toggle by default, and the workspace hint compacts into a single line so the drop zone no longer dominates the sidebar.
 > - How to verify: launch Presentation Mode, navigate to the affected slides (2 & 3) and confirm the inner list/block content fills the stage area; overflowing lists should scroll internally. This fix is intentionally minimal and low-risk.
 
 #### Fixed Stage Layout Action Plan
@@ -70,7 +71,7 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 - [x] Persist Presentation preferences for reuse across desktop sessions (local storage in renderer) and surface the same schema to CLI/inspector tooling.
 - [ ] Document the expanded Presentation settings contract once available (README + README.th + status report).
 
-> **Settings status:** Shared Settings currently function at roughly **70%** completeness—Typing mode reacts correctly, while Presentation-specific controls are only partially wired. Completing the plan above will remove the coupling and stabilise future feature work.
+> **Settings status:** Split settings now operate at roughly **90%** completeness—each mode owns its own panel, inactive panels are hidden, and per-mode persistence is in place. The remaining work is automated smoke tests before layering on new Presentation-only controls.
 > **Expected outcome:** Clearer UX (no shared sliders that do nothing), reduced cross-mode bugs, easier addition of Presentation-only options.
 > **Risks:** Requires coordinated UI + IPC refactor; potential regression if old preferences depend on shared keys. Mitigate by smoke-testing both modes and keeping legacy keys aliased during migration.
 
@@ -99,6 +100,7 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 - [x] Prepare npm distribution channel: trim package payload, define `bin` entry for the desktop launcher, and gate publish behind CI.
 - [x] Publish npm beta, validate `npx @chahuadev/code-animator --presentation` workflow, and document install commands in both READMEs.
 - [x] Capture npm install metrics (download counts, failure rates) and log alongside MSI telemetry each release.
+- [x] Route Windows installer builds through `npm run dist:win` so telemetry collection and commit tagging stay consistent.
 - [x] Establish release gate: no MSI/EXE/npm publish until presentation-mode + security tasks hit 100% completion.
 
 > **Latest packaging updates:** `package.json` now injects `COMMIT_HASH` during `npm run build:win`, enabling commit-tagged artifact names. The NSIS builder emits `.exe` (installer) and portable `.exe` outputs. The CLI (`@chahuadev/code-animator`) ships on npm with `npx` support, build metrics land in `workspace/telemetry/installer-metrics.json`, and first-run telemetry captures desktop vs. npm launch channels automatically. The `workspace/` folder is pre-created during application initialization to ensure user file storage and telemetry collection work reliably.
@@ -218,6 +220,8 @@ npm start
    - **Autoplay speed:** Controls how fast text is condensed and slides advance
    - **Summarisation strength:** Controls how aggressively bullet points are shortened
 4. Click **Play Animation** to launch the presentation window
+
+**Tip:** Workspace guidance now lives behind the **Show workspace quick start** toggle below the drop zone. Expand it whenever you need reminders about the `workspace/` folder locations (dev, packaged, user-data) in English or Thai.
 
 ### Navigation & Controls
 

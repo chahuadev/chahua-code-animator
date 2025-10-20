@@ -1,9 +1,11 @@
 # Chahua Code Animator *(active development – usable but not yet guaranteed 100% stable)*
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **Markdown-driven presentation playback with secure file handling**
+
+![Chahua Code Animator interface preview](docs/image/chahua-code-animator.png)
 
 Chahua Code Animator converts status updates written in Markdown into polished slide decks or animated typing sequences. The current development sprint focuses on Presentation mode, summarising long reports into concise slides while keeping Typing mode available for code demos.
 
@@ -21,13 +23,14 @@ See the active development roadmap in [`docs/en/PRESENTATION_MODE_STATUS.md`](do
 
 ---
 
-## Current status (19 Oct 2025)
+## Current status (20 Oct 2025)
 
 | Area | Completion |
 | --- | --- |
 | Markdown parsing & slide generation | **100%** (title, agenda, progress, content, tooltips) |
 | Presentation layout polish | **80%** (safe-frame refactor scheduled) |
-| Settings panel separation | **70%** (Typing stable, Presentation refinements pending) |
+| Settings panel separation | **90%** (panels split per mode, inactive panes hidden) |
+| Workspace quick-start UX | **Done** (collapsible helper tucked under toggle) |
 | Browse Files alignment fix | in progress |
 
 ---
@@ -49,13 +52,15 @@ npm start
    - *Typing:* Character-by-character playback of raw source files with adjustable speed and block size.
 3. Hit **Play Animation** to open the Electron playback window with navigation controls.
 
+> Tip: workspace guidance now sits behind the **Show workspace quick start** toggle below the drop zone. Expand it whenever you need reminders about dev/packaged/user `workspace/` paths in English or Thai.
+
 ### Using the packaged application
 
 After building with `npm run build:win`, the installers are located in `dist/`:
 
 ```powershell
 # Install the .exe or .msi
-& ".\dist\Chahua Code Animator-1.0.0-win-x64-{COMMIT_HASH}.exe"
+& ".\dist\Chahua Code Animator-1.1.0-win-x64-{COMMIT_HASH}.exe"
 ```
 
 Once installed, launch the app from the Start menu or desktop shortcut. The application automatically creates a `workspace/` folder on first run for storing user files.
@@ -129,7 +134,7 @@ npm run build:win
 4.  Verify NSIS creates Start Menu shortcuts and desktop shortcuts
 5.  Verify MSI integrates with Windows Add/Remove Programs
 6.  (Optional) Sign artifacts with `signtool` and re-test
-7.  Record metrics in `workspace/telemetry/installer-metrics.json`
+7.  Record metrics in `workspace/telemetry/installer-metrics.json` (use `npm run dist:win` to generate the instrumented install bundle when ready)
 
 > **Note:** The `workspace/` folder is created automatically on first app launch. Ensure it exists in the installation directory for telemetry and user data storage.
 
