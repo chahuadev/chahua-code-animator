@@ -12,7 +12,7 @@
 // !  Contact: chahuadev@gmail.com
 // ! ══════════════════════════════════════════════════════════════════════════════
 
-import { app, BrowserWindow, ipcMain, dialog, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, screen, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -22,22 +22,10 @@ import { SecurityManager } from './security-core.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize security manager
-// If a packaged workspace (dist\workspace) exists (e.g., during local packing), allow it explicitly
-const extraAllowed = [];
-try {
-    const packagedWorkspace = path.join(__dirname, 'dist', 'workspace');
-    if (fs.existsSync(packagedWorkspace)) {
-        extraAllowed.push(packagedWorkspace);
-    }
-} catch (e) {
-    // ignore
-}
-
 const securityManager = new SecurityManager({
     ALLOW_SYMLINKS: false,
     VERIFY_FILE_INTEGRITY: true,
-    EXTRA_ALLOWED_DIRS: extraAllowed
+    EXTRA_ALLOWED_DIRS: []
 });
 
 let mainWindow;
@@ -45,50 +33,190 @@ let animationWindow;
 
 // Per-user workspace (created under Electron's userData path)
 let userWorkspace;
+let workspaceCandidates = [];
+
+const workspaceGuides = {
+    en: path.join(__dirname, 'docs', 'en', 'WORKSPACE_GUIDE.md'),
+    th: path.join(__dirname, 'docs', 'th', 'WORKSPACE_GUIDE.md')
+};
+
+const workspaceGuideUrls = {
+    en: 'https://github.com/chahuadev/chahua-code-animator/blob/main/docs/en/WORKSPACE_GUIDE.md',
+    th: 'https://github.com/chahuadev/chahua-code-animator/blob/main/docs/th/WORKSPACE_GUIDE.md'
+};
+
+function isDirectoryWritable(targetPath) {
+    try {
+        fs.accessSync(targetPath, fs.constants.W_OK);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+function gatherWorkspaceCandidates() {
+    const candidates = [];
+    const seen = new Set();
+    const isPackaged = app.isPackaged;
+
+    const register = (targetPath, options = {}) => {
+        if (!targetPath) {
+            return;
+        }
+
+        const resolved = path.resolve(targetPath);
+        if (seen.has(resolved)) {
+            return;
+        }
+        seen.add(resolved);
+
+        const record = {
+            path: resolved,
+            label: options.label || 'Workspace',
+            type: options.type || 'general',
+            priority: options.priority ?? 50,
+            createIfMissing: Boolean(options.createIfMissing)
+        };
+
+        record.exists = fs.existsSync(resolved);
+        record.writable = record.exists ? isDirectoryWritable(resolved) : false;
+        candidates.push(record);
+    };
+
+    const projectWorkspace = path.join(__dirname, 'workspace');
+    register(projectWorkspace, {
+        label: 'Project Workspace',
+        type: 'project',
+        priority: isPackaged ? 80 : 10
+    });
+
+    const distWorkspace = path.join(__dirname, 'dist', 'workspace');
+    register(distWorkspace, {
+        label: 'Distribution Workspace',
+        type: 'dist',
+        priority: 40
+    });
+
+    if (process.resourcesPath) {
+        register(path.join(process.resourcesPath, 'workspace'), {
+            label: 'Resources Workspace',
+            type: 'resources',
+            priority: 20
+        });
+    }
+
+    const execDir = path.dirname(process.execPath);
+    register(path.join(execDir, 'workspace'), {
+        label: 'Executable Workspace',
+        type: 'runtime',
+        priority: 25
+    });
+
+    if (process.platform === 'win32') {
+        const programInstallPath = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Chahua Code Animator');
+        register(path.join(programInstallPath, 'workspace'), {
+            label: 'Installed Workspace',
+            type: 'installed',
+            priority: 30
+        });
+    }
+
+    try {
+        const userDataDir = app.getPath('userData');
+        register(path.join(userDataDir, 'workspace'), {
+            label: 'User Data Workspace',
+            type: 'user',
+            priority: isPackaged ? 5 : 15,
+            createIfMissing: true
+        });
+    } catch (error) {
+        console.warn('[Workspace] Unable to resolve userData path:', error.message);
+    }
+
+    return candidates.sort((a, b) => a.priority - b.priority);
+}
 
 function ensureUserWorkspace() {
     try {
-        // Prefer workspace located next to the installed program files under LocalAppData\Programs
-        // This matches installer behavior which creates: %LocalAppData%\Programs\Chahua Code Animator\workspace
-        const localAppData = app.getPath && app.getPath('home') ? app.getPath('home') : null;
-        // On Windows, installed program folder is typically under %LocalAppData%\Programs\<ProductName>
-        const programInstallPath = process.platform === 'win32'
-            ? path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Chahua Code Animator')
-            : null;
+        workspaceCandidates = gatherWorkspaceCandidates();
 
-        const installedWorkspace = programInstallPath ? path.join(programInstallPath, 'workspace') : null;
-
-        if (installedWorkspace && fs.existsSync(installedWorkspace)) {
-            userWorkspace = installedWorkspace;
-        } else {
-            const userDataDir = app.getPath && app.getPath('userData') ? app.getPath('userData') : path.join(__dirname, 'user_data');
-            userWorkspace = path.join(userDataDir, 'workspace');
+        for (const candidate of workspaceCandidates) {
+            if (!candidate.exists && candidate.createIfMissing) {
+                try {
+                    fs.mkdirSync(candidate.path, { recursive: true });
+                    candidate.exists = fs.existsSync(candidate.path);
+                    candidate.writable = candidate.exists ? isDirectoryWritable(candidate.path) : false;
+                } catch (error) {
+                    console.warn(`[Workspace] Unable to create ${candidate.label} at ${candidate.path}:`, error.message);
+                }
+            }
         }
+
+        let selected = workspaceCandidates.find(candidate => candidate.exists && candidate.writable)
+            || workspaceCandidates.find(candidate => candidate.exists);
+
+        if (!selected && workspaceCandidates.length > 0) {
+            const fallbackCandidate = workspaceCandidates[0];
+            try {
+                fs.mkdirSync(fallbackCandidate.path, { recursive: true });
+                fallbackCandidate.exists = fs.existsSync(fallbackCandidate.path);
+                fallbackCandidate.writable = fallbackCandidate.exists ? isDirectoryWritable(fallbackCandidate.path) : false;
+                if (fallbackCandidate.exists) {
+                    selected = fallbackCandidate;
+                }
+            } catch (error) {
+                console.warn('[Workspace] Fallback workspace creation failed:', error.message);
+            }
+        }
+
+        if (!selected) {
+            selected = {
+                path: path.join(__dirname, 'workspace'),
+                label: 'Fallback Workspace',
+                type: 'fallback',
+                exists: false,
+                writable: false
+            };
+            try {
+                fs.mkdirSync(selected.path, { recursive: true });
+                selected.exists = fs.existsSync(selected.path);
+                selected.writable = selected.exists ? isDirectoryWritable(selected.path) : false;
+            } catch (error) {
+                console.error('[Workspace] Critical failure creating fallback workspace:', error.message);
+            }
+            workspaceCandidates.push(selected);
+        }
+
+        userWorkspace = selected.path;
+
         if (!fs.existsSync(userWorkspace)) {
             fs.mkdirSync(userWorkspace, { recursive: true });
         }
-        // ensure placeholder exists (only create when writable)
+
         try {
-            if (!fs.existsSync(userWorkspace)) {
-                fs.mkdirSync(userWorkspace, { recursive: true });
+            const keepFile = path.join(userWorkspace, '.keep');
+            if (!fs.existsSync(keepFile)) {
+                fs.writeFileSync(keepFile, '');
             }
-            const keep = path.join(userWorkspace, '.keep');
-            if (!fs.existsSync(keep)) {
-                fs.writeFileSync(keep, '');
-            }
-        } catch (e) {
-            // If installed workspace is not writable (program files area), fall back to packaged workspace
-            if (fs.existsSync(userWorkspace) === false) {
-                userWorkspace = path.join(__dirname, 'workspace');
-                try { fs.mkdirSync(userWorkspace, { recursive: true }); } catch (er) {}
-            }
+        } catch (error) {
+            console.warn('[Workspace] Unable to seed workspace keep file:', error.message);
         }
+
+        const extraDirs = new Set(securityManager.config.EXTRA_ALLOWED_DIRS || []);
+        workspaceCandidates.forEach(candidate => {
+            if (candidate.exists) {
+                extraDirs.add(candidate.path);
+            }
+        });
+        extraDirs.add(userWorkspace);
+        securityManager.config.EXTRA_ALLOWED_DIRS = Array.from(extraDirs);
     } catch (err) {
-        console.warn('[Workspace] Could not ensure user workspace:', err.message);
-        // fallback to packaged workspace
+        console.warn('[Workspace] ensureUserWorkspace encountered an error:', err.message);
         userWorkspace = path.join(__dirname, 'workspace');
         if (!fs.existsSync(userWorkspace)) {
-            try { fs.mkdirSync(userWorkspace, { recursive: true }); } catch (e) {}
+            try { fs.mkdirSync(userWorkspace, { recursive: true }); } catch (creationError) {
+                console.error('[Workspace] Unable to create fallback workspace:', creationError.message);
+            }
         }
     }
 }
@@ -234,11 +362,17 @@ function createAnimationWindow() {
 // File Selection Handler
 ipcMain.handle('dialog:openFile', async () => {
     try {
-        const workspaceDir = userWorkspace || path.join(__dirname, 'workspace');
+        let workspaceDir = userWorkspace;
+        if (!workspaceDir || !fs.existsSync(workspaceDir)) {
+            const firstAvailable = workspaceCandidates.find(candidate => candidate.exists);
+            workspaceDir = firstAvailable ? firstAvailable.path : path.join(__dirname, 'workspace');
+        }
         
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openFile'],
             defaultPath: workspaceDir,
+            title: 'Select Workspace File',
+            message: `Browse for a file saved inside the workspace folder (${workspaceDir})`,
             filters: [
                 { 
                     name: 'Code Files', 
@@ -392,6 +526,120 @@ ipcMain.handle('security:exportLog', async () => {
         return { 
             success: false, 
             error: error.message 
+        };
+    }
+});
+
+// Workspace helpers
+ipcMain.handle('workspace:getInfo', async () => {
+    try {
+        const snapshot = workspaceCandidates.map(candidate => ({
+            path: candidate.path,
+            label: candidate.label,
+            type: candidate.type,
+            exists: fs.existsSync(candidate.path),
+            writable: fs.existsSync(candidate.path) ? isDirectoryWritable(candidate.path) : candidate.writable
+        }));
+
+        const activePath = (userWorkspace && fs.existsSync(userWorkspace))
+            ? userWorkspace
+            : (snapshot.find(item => item.exists)?.path || userWorkspace || path.join(__dirname, 'workspace'));
+
+        const guides = Object.fromEntries(Object.entries(workspaceGuides).map(([language, guidePath]) => [
+            language,
+            {
+                path: guidePath,
+                exists: fs.existsSync(guidePath)
+            }
+        ]));
+
+        return {
+            success: true,
+            activePath,
+            candidates: snapshot,
+            isPackaged: app.isPackaged,
+            guides
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+ipcMain.handle('workspace:openFolder', async () => {
+    try {
+        const target = (userWorkspace && fs.existsSync(userWorkspace))
+            ? userWorkspace
+            : (workspaceCandidates.find(candidate => candidate.exists)?.path || userWorkspace);
+
+        if (!target) {
+            throw new Error('Workspace directory is not available yet.');
+        }
+
+        const result = await shell.openPath(target);
+        if (result) {
+            throw new Error(result);
+        }
+
+        return {
+            success: true,
+            path: target
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+ipcMain.handle('workspace:openGuide', async (event, language = 'en') => {
+    try {
+        const langKey = typeof language === 'string' ? language.toLowerCase() : 'en';
+        const guidePath = workspaceGuides[langKey] || workspaceGuides.en;
+
+        if (!guidePath || !fs.existsSync(guidePath)) {
+            throw new Error(`Guide not found for language: ${langKey}`);
+        }
+
+        const result = await shell.openPath(guidePath);
+        if (result) {
+            throw new Error(result);
+        }
+
+        return {
+            success: true,
+            path: guidePath
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+});
+
+ipcMain.handle('workspace:openGuideOnline', async (event, language = 'en') => {
+    try {
+        const langKey = typeof language === 'string' ? language.toLowerCase() : 'en';
+        const targetUrl = workspaceGuideUrls[langKey] || workspaceGuideUrls.en;
+
+        if (!targetUrl) {
+            throw new Error(`Online guide not configured for language: ${langKey}`);
+        }
+
+        await shell.openExternal(targetUrl);
+
+        return {
+            success: true,
+            url: targetUrl
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
         };
     }
 });

@@ -1,6 +1,6 @@
 # Chahuadev Code Animator — Presentation Mode Status Report
 
-**Last Updated:** 19 October 2025  
+**Last Updated:** 20 October 2025  
 **Author:** GitHub Copilot (AI Programming Assistant)
 
 ---
@@ -42,23 +42,33 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 
 > **Patch (20 October 2025):**
 > - [x] Applied a small, targeted CSS fix in `renderer/styles/animation.css` to address an empty lower area seen on some agenda slides (notably Slides 2 and 3). The change makes `.presentation-stage .slide-inner` a column flex container and allows `.slide-blocks` and `.slide-agenda` to flex-grow and use the available stage height. No visual overlays or pseudo panels were added — this is a layout-only change to let content fill the fixed stage.
+> - [x] Updated `renderer/scripts/animation.js` to wrap slides in a fixed 1100×620 stage and scale that stage to the viewport, keeping navigation HUD and click targets anchored even when the window resizes.
+> - [x] Split Typing vs. Presentation settings into dedicated panels, persisted per-mode preferences, and added presentation autoplay cadence controls (speed, per-slide duration, loop/bounce/once modes) to unlock richer playback tuning before future feature work.
 > - How to verify: launch Presentation Mode, navigate to the affected slides (2 & 3) and confirm the inner list/block content fills the stage area; overflowing lists should scroll internally. This fix is intentionally minimal and low-risk.
 
 #### Fixed Stage Layout Action Plan
-- [ ] Define a canonical stage size (e.g. 1920×1080 logical pixels at 16:9) and render all slide content inside this stage only.
-- [ ] Wrap the stage in a responsive viewport that scales the entire presentation via `transform: scale(...)` (or CSS `zoom`) based on available window space while preserving the aspect ratio.
-- [ ] Keep navigation HUD, overlays, and click targets anchored to the stage boundaries; remove layout assumptions that rely on viewport height/width directly.
-- [ ] Add safe padding and background treatment around the stage so excess screen space shows letter/pillar boxing rather than stretched UI elements.
+- [x] Define a canonical stage size (currently 1100×620 logical pixels at ~16:9) and render all slide content inside this stage only.
+- [x] Wrap the stage in a responsive viewport that scales the entire presentation via `transform: scale(...)` based on available window space while preserving the aspect ratio.
+- [x] Keep navigation HUD, overlays, and click targets anchored to the stage boundaries; remove layout assumptions that rely on viewport height/width directly.
+- [x] Add safe padding and background treatment around the stage so excess screen space shows letter/pillar boxing rather than stretched UI elements.
 - [ ] Validate behaviour across common resolutions (1280×720, 1920×1080, 3840×2160) and window resizing to ensure content remains fully visible.
 - [ ] Update regression plan to include visual snapshots that confirm the stage borders remain aligned with the display frame.
 
 #### Settings Panel Separation Plan (Typing vs Presentation)
-- [ ] Audit `renderer/scripts/main.js` to detach the shared Settings card from the Animation Style selector so each mode controls only its own inputs.
-- [ ] Build a dedicated Presentation settings group (auto-loop, autoplay speed, summarisation strength) and isolate Typing parameters (character speed, block size, lines per block).
-- [ ] Refactor state handling so switching styles swaps settings panes without leaking values or labels between modes.
-- [ ] Update `renderer/index.html` structure and `renderer/styles/main.css` layout to present the panels side-by-side while keeping a cohesive visual hierarchy.
-- [ ] Adjust IPC/bridge messages so only the active mode’s configuration is sent to `renderer/scripts/animation.js`.
-- [ ] Document the new per-mode settings contract in README and this status report once implemented.
+- [x] Restructure `renderer/index.html` and `renderer/styles/main.css` so Typing and Presentation settings render in distinct panes (tabbed or side-by-side) instead of a shared card.
+- [x] Update `renderer/scripts/main.js` to maintain independent state objects per mode, swap the visible pane when styles change, and keep legacy keys temporarily aliased for backwards compatibility.
+- [x] Ensure control bindings route values only to their respective mode; remove shared sliders and copy defaults into per-mode schemas during migration.
+- [x] Adjust IPC messaging so `transferAnimationData` sends only the active mode configuration to `renderer/scripts/animation.js`, and add guards on the receiver to reject stray keys.
+- [x] Persist per-mode settings (stored via local storage) and provide a reset pathway that clears each mode independently.
+- [ ] Add a smoke-test checklist covering both modes after the split to verify there is no cross-mode leakage before resuming feature work.
+
+#### Presentation Settings Expansion Plan
+- [x] Introduce autoplay cadence controls (global speed plus optional per-slide timers) and sequencing options (loop, bounce, single run).
+- [ ] Expose summarisation strength/full-text toggles directly in the Presentation pane so users can swap condensed vs. complete bullets during playback.
+- [ ] Add stage theming options (background palettes, typography presets) and prepare hooks for future speaker-notes overlays.
+- [ ] Provide navigation HUD toggles (progress badge, tooltip verbosity, agenda density) so presenters can tailor on-screen aids.
+- [x] Persist Presentation preferences for reuse across desktop sessions (local storage in renderer) and surface the same schema to CLI/inspector tooling.
+- [ ] Document the expanded Presentation settings contract once available (README + README.th + status report).
 
 > **Settings status:** Shared Settings currently function at roughly **70%** completeness—Typing mode reacts correctly, while Presentation-specific controls are only partially wired. Completing the plan above will remove the coupling and stabilise future feature work.
 > **Expected outcome:** Clearer UX (no shared sliders that do nothing), reduced cross-mode bugs, easier addition of Presentation-only options.

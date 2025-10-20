@@ -25,7 +25,11 @@ const ALLOWED_CHANNELS = {
         'animation:open',
         'animation:transfer',
         'security:getStats',
-        'security:exportLog'
+        'security:exportLog',
+        'workspace:getInfo',
+        'workspace:openFolder',
+    'workspace:openGuide',
+    'workspace:openGuideOnline'
     ],
     receive: [
         'animation:data'
@@ -79,6 +83,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Security operations
     getSecurityStats: () => ipcRenderer.invoke('security:getStats'),
     exportSecurityLog: () => ipcRenderer.invoke('security:exportLog'),
+
+    // Workspace helpers
+    getWorkspaceInfo: () => ipcRenderer.invoke('workspace:getInfo'),
+    openWorkspaceFolder: () => ipcRenderer.invoke('workspace:openFolder'),
+    openWorkspaceGuide: (language = 'en') => ipcRenderer.invoke('workspace:openGuide', language),
+    openWorkspaceGuideOnline: (language = 'en') => ipcRenderer.invoke('workspace:openGuideOnline', language),
 
     // Utility
     getVersion: () => '1.0.0',

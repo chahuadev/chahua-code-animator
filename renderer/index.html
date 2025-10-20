@@ -61,7 +61,43 @@
                     <p class="drop-text">Drag & Drop Code File Here</p>
                     <p class="drop-subtext">or</p>
                     <button id="selectFileBtn" class="btn-primary">Browse Files</button>
-                    <p class="workspace-hint"> Files must be in <code>workspace</code> folder</p>
+                    <p class="workspace-hint">
+                        <span>Primary workspace: <code data-workspace-primary-path>workspace/</code></span>
+                        <span>โฟลเดอร์หลัก: <code data-workspace-primary-path>workspace/</code></span>
+                    </p>
+                    <div class="workspace-actions">
+                        <button id="openWorkspaceFolderBtn" class="btn-link">Open workspace folder</button>
+                        <div class="workspace-actions-buttons">
+                            <button id="openWorkspaceGuideEn" class="btn-link">Usage guide (EN)</button>
+                            <button id="openWorkspaceGuideTh" class="btn-link">คู่มือการใช้งาน (TH)</button>
+                        </div>
+                    </div>
+                    <div class="workspace-quickstart">
+                        <button id="toggleWorkspaceHelp" class="btn-link workspace-toggle" type="button" aria-expanded="false" aria-controls="workspaceHelpContent">
+                            Show workspace quick start / แสดงวิธีใช้งาน
+                        </button>
+                        <div id="workspaceHelpContent" class="workspace-help is-collapsed" hidden>
+                            <h4>Workspace Quick Start</h4>
+                            <div class="workspace-help-columns">
+                                <div>
+                                    <h5>English</h5>
+                                    <ol>
+                                        <li>Development builds: copy files into <code data-workspace-dev-path>workspace/</code>.</li>
+                                        <li>Packaged app: place files beside the app in <code data-workspace-packaged-path>workspace/</code>.</li>
+                                        <li>Your personal data lives in <code data-workspace-user-path>userData/workspace</code>.</li>
+                                    </ol>
+                                </div>
+                                <div>
+                                    <h5>ภาษาไทย</h5>
+                                    <ol>
+                                        <li>โหมดพัฒนาให้คัดลอกไฟล์ไว้ใน <code data-workspace-dev-path>workspace/</code></li>
+                                        <li>หลังแพ็กเป็นแอปให้ย้ายไฟล์ไปที่ <code data-workspace-packaged-path>workspace/</code> ใกล้ไฟล์โปรแกรม</li>
+                                        <li>ข้อมูลผู้ใช้จะถูกบันทึกไว้ที่ <code data-workspace-user-path>userData/workspace</code></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div id="fileInfo" class="file-info">
@@ -156,84 +192,166 @@
                     </svg>
                     Settings
                 </h3>
-                <div class="settings-group">
-                    <label>
-                        <span>Animation Speed</span>
-                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1">
-                        <span class="range-value" id="speedValue">1.0x</span>
-                    </label>
-                    
-                    <label>
-                        <span>Block Size</span>
-                        <input type="range" id="blockSizeSlider" min="8" max="16" step="1" value="10">
-                        <span class="range-value" id="blockSizeValue">10px</span>
-                    </label>
-                    
-                    <label>
-                        <span>Lines per Block</span>
-                        <input type="range" id="linesSlider" min="10" max="50" step="5" value="24">
-                        <span class="range-value" id="linesValue">24</span>
-                    </label>
+                <div class="settings-container">
+                    <section class="settings-panel active" data-settings-panel="typing">
+                        <div class="settings-panel-header">
+                            <h4 class="settings-panel-title">Typing Mode</h4>
+                            <span class="settings-panel-status">Active</span>
+                        </div>
+                        <div class="settings-group" id="typingSettingsGroup">
+                            <label>
+                                <span>Animation Speed</span>
+                                <input type="range" id="typingSpeedSlider" min="0.5" max="3" step="0.1" value="1">
+                                <span class="range-value" id="typingSpeedValue">1.0x</span>
+                            </label>
 
-                    <label>
-                        <span>Font Family</span>
-                        <select id="fontFamilySelect">
-                            <option value="consolas">Consolas</option>
-                            <option value="fira">Fira Code</option>
-                            <option value="jetbrains">JetBrains Mono</option>
-                            <option value="cascadia">Cascadia Code</option>
-                        </select>
-                    </label>
+                            <label>
+                                <span>Block Size</span>
+                                <input type="range" id="typingBlockSizeSlider" min="8" max="16" step="1" value="10">
+                                <span class="range-value" id="typingBlockSizeValue">10px</span>
+                            </label>
 
-                    <label>
-                        <span>Wrap Width</span>
-                        <input type="range" id="wrapWidthSlider" min="50" max="90" step="5" value="70">
-                        <span class="range-value" id="wrapWidthValue">70vw</span>
-                    </label>
+                            <label>
+                                <span>Lines per Block</span>
+                                <input type="range" id="typingLinesSlider" min="10" max="50" step="5" value="24">
+                                <span class="range-value" id="typingLinesValue">24</span>
+                            </label>
 
-                    <label>
-                        <span>Bottom Padding</span>
-                        <input type="range" id="paddingSlider" min="40" max="240" step="10" value="140">
-                        <span class="range-value" id="paddingValue">140px</span>
-                    </label>
+                            <label>
+                                <span>Font Family</span>
+                                <select id="typingFontFamilySelect">
+                                    <option value="consolas">Consolas</option>
+                                    <option value="fira">Fira Code</option>
+                                    <option value="jetbrains">JetBrains Mono</option>
+                                    <option value="cascadia">Cascadia Code</option>
+                                </select>
+                            </label>
 
-                    <label>
-                        <span>Cursor Blink Speed</span>
-                        <input type="range" id="cursorSpeedSlider" min="0.4" max="1.8" step="0.1" value="0.8">
-                        <span class="range-value" id="cursorSpeedValue">0.8s</span>
-                    </label>
+                            <label>
+                                <span>Wrap Width</span>
+                                <input type="range" id="typingWrapWidthSlider" min="50" max="90" step="5" value="70">
+                                <span class="range-value" id="typingWrapWidthValue">70vw</span>
+                            </label>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="syntaxHighlight" checked>
-                        <span>Syntax Highlighting</span>
-                    </label>
+                            <label>
+                                <span>Bottom Padding</span>
+                                <input type="range" id="typingPaddingSlider" min="40" max="240" step="10" value="140">
+                                <span class="range-value" id="typingPaddingValue">140px</span>
+                            </label>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="showLineNumbers">
-                        <span>Show Line Numbers</span>
-                    </label>
+                            <label>
+                                <span>Cursor Blink Speed</span>
+                                <input type="range" id="typingCursorSpeedSlider" min="0.4" max="1.8" step="0.1" value="0.8">
+                                <span class="range-value" id="typingCursorSpeedValue">0.8s</span>
+                            </label>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="highlightCurrentLine" checked>
-                        <span>Highlight Current Line</span>
-                    </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="typingSyntaxHighlight" checked>
+                                <span>Syntax Highlighting</span>
+                            </label>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="highContrast">
-                        <span>High Contrast Background</span>
-                    </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="typingShowLineNumbers">
+                                <span>Show Line Numbers</span>
+                            </label>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="autoLoop">
-                        <span>Auto-loop Typing</span>
-                    </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="typingHighlightCurrentLine" checked>
+                                <span>Highlight Current Line</span>
+                            </label>
 
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="startAssembled">
-                        <span>Skip Typing (Start Assembled)</span>
-                    </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="typingHighContrast">
+                                <span>High Contrast Background</span>
+                            </label>
 
-                    <button id="resetSettingsBtn" class="btn-secondary">Reset Settings</button>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="typingAutoLoop">
+                                <span>Auto-loop Typing</span>
+                            </label>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="typingStartAssembled">
+                                <span>Skip Typing (Start Assembled)</span>
+                            </label>
+
+                            <button id="resetTypingSettingsBtn" class="btn-secondary">Reset Typing Settings</button>
+                        </div>
+                    </section>
+
+                    <section class="settings-panel" data-settings-panel="presentation">
+                        <div class="settings-panel-header">
+                            <h4 class="settings-panel-title">Presentation Mode</h4>
+                            <span class="settings-panel-status">Active</span>
+                        </div>
+                        <div class="settings-group" id="presentationSettingsGroup">
+                            <label>
+                                <span>Autoplay Speed</span>
+                                <input type="range" id="presentationSpeedSlider" min="0.5" max="3" step="0.1" value="1">
+                                <span class="range-value" id="presentationSpeedValue">1.0x</span>
+                            </label>
+
+                            <label>
+                                <span>Slide Duration</span>
+                                <input type="range" id="presentationSlideDelaySlider" min="3" max="12" step="1" value="6">
+                                <span class="range-value" id="presentationSlideDelayValue">6s</span>
+                            </label>
+
+                            <label>
+                                <span>Playback Sequence</span>
+                                <select id="presentationPlaybackMode">
+                                    <option value="loop">Loop</option>
+                                    <option value="bounce">Bounce</option>
+                                    <option value="once">Single Run</option>
+                                </select>
+                            </label>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="presentationAutoLoop">
+                                <span>Enable Autoplay</span>
+                            </label>
+
+                            <label>
+                                <span>Summary Mode</span>
+                                <select id="presentationSummaryMode">
+                                    <option value="condensed">Condensed</option>
+                                    <option value="full">Full Text</option>
+                                </select>
+                            </label>
+
+                            <label>
+                                <span>Stage Theme</span>
+                                <select id="presentationStageTheme">
+                                    <option value="default">Default</option>
+                                    <option value="midnight">Midnight</option>
+                                    <option value="minimal">Minimal</option>
+                                </select>
+                            </label>
+
+                            <label>
+                                <span>Tooltip Detail</span>
+                                <select id="presentationTooltipDetail">
+                                    <option value="full">Full</option>
+                                    <option value="compact">Compact</option>
+                                </select>
+                            </label>
+
+                            <label>
+                                <span>Agenda Density</span>
+                                <select id="presentationAgendaDensity">
+                                    <option value="comfortable">Comfortable</option>
+                                    <option value="compact">Compact</option>
+                                </select>
+                            </label>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="presentationShowProgress" checked>
+                                <span>Show Progress Badge</span>
+                            </label>
+
+                            <button id="resetPresentationSettingsBtn" class="btn-secondary">Reset Presentation Settings</button>
+                        </div>
+                    </section>
                 </div>
             </div>
     </aside>

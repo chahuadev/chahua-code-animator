@@ -19,7 +19,12 @@ const FONT_FAMILIES = {
     cascadia: "'Cascadia Code', 'Consolas', monospace"
 };
 
-const DEFAULT_SETTINGS = {
+const STORAGE_KEYS = {
+    typing: 'cca.settings.typing.v1',
+    presentation: 'cca.settings.presentation.v1'
+};
+
+const DEFAULT_TYPING_SETTINGS = {
     speed: 1.0,
     blockSize: 10,
     linesPerBlock: 24,
@@ -35,15 +40,80 @@ const DEFAULT_SETTINGS = {
     startAssembled: false
 };
 
+const DEFAULT_PRESENTATION_SETTINGS = {
+    autoLoop: false,
+    speed: 1.0,
+    playbackMode: 'loop',
+    perSlideDuration: 6,
+    summaryMode: 'condensed',
+    stageTheme: 'default',
+    tooltipDetail: 'full',
+    agendaDensity: 'comfortable',
+    showProgressBadge: true
+};
+
 const state = {
     currentFile: null,
     fileContent: null,
     fileHash: null,
     selectedStyle: 'typing',
-    settings: { ...DEFAULT_SETTINGS }
+    typingSettings: { ...DEFAULT_TYPING_SETTINGS },
+    presentationSettings: { ...DEFAULT_PRESENTATION_SETTINGS }
 };
 
+function loadPersistedSettings() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+        return;
+    }
+
+    try {
+        const storedTyping = window.localStorage.getItem(STORAGE_KEYS.typing);
+        if (storedTyping) {
+            const parsed = JSON.parse(storedTyping);
+            state.typingSettings = { ...DEFAULT_TYPING_SETTINGS, ...parsed };
+        }
+    } catch (error) {
+        console.warn('Failed to restore typing settings:', error);
+        state.typingSettings = { ...DEFAULT_TYPING_SETTINGS };
+    }
+
+    try {
+        const storedPresentation = window.localStorage.getItem(STORAGE_KEYS.presentation);
+        if (storedPresentation) {
+            const parsed = JSON.parse(storedPresentation);
+            state.presentationSettings = { ...DEFAULT_PRESENTATION_SETTINGS, ...parsed };
+        }
+    } catch (error) {
+        console.warn('Failed to restore presentation settings:', error);
+        state.presentationSettings = { ...DEFAULT_PRESENTATION_SETTINGS };
+    }
+}
+
+function persistSettings(mode) {
+    if (typeof window === 'undefined' || !window.localStorage) {
+        return;
+    }
+
+    try {
+        if (mode === 'typing') {
+            window.localStorage.setItem(STORAGE_KEYS.typing, JSON.stringify(state.typingSettings));
+        } else if (mode === 'presentation') {
+            window.localStorage.setItem(STORAGE_KEYS.presentation, JSON.stringify(state.presentationSettings));
+        }
+    } catch (error) {
+        console.warn('Failed to persist settings:', error);
+    }
+}
+
 const PRESENTATION_STYLE = 'presentation';
+
+function getSettingsForStyle(style) {
+    return style === PRESENTATION_STYLE ? state.presentationSettings : state.typingSettings;
+}
+
+function getActiveSettings() {
+    return getSettingsForStyle(state.selectedStyle);
+}
 
 function isMarkdownPath(filePath) {
     if (!filePath || typeof filePath !== 'string') {
@@ -74,29 +144,54 @@ const elements = {
     fileName: document.getElementById('fileName'),
     fileMeta: document.getElementById('fileMeta'),
     securityBadge: document.getElementById('securityBadge'),
+    workspaceHint: document.querySelector('.workspace-hint'),
+    workspacePrimaryPathSlots: document.querySelectorAll('[data-workspace-primary-path]'),
+    workspaceDevPathSlots: document.querySelectorAll('[data-workspace-dev-path]'),
+    workspacePackagedPathSlots: document.querySelectorAll('[data-workspace-packaged-path]'),
+    workspaceUserPathSlots: document.querySelectorAll('[data-workspace-user-path]'),
+    openWorkspaceFolderBtn: document.getElementById('openWorkspaceFolderBtn'),
+    openWorkspaceGuideEnBtn: document.getElementById('openWorkspaceGuideEn'),
+    openWorkspaceGuideThBtn: document.getElementById('openWorkspaceGuideTh'),
+    toggleWorkspaceHelpBtn: document.getElementById('toggleWorkspaceHelp'),
+    workspaceHelpContent: document.getElementById('workspaceHelpContent'),
     
     styleCards: document.querySelectorAll('.style-card'),
-    
-    speedSlider: document.getElementById('speedSlider'),
-    speedValue: document.getElementById('speedValue'),
-    blockSizeSlider: document.getElementById('blockSizeSlider'),
-    blockSizeValue: document.getElementById('blockSizeValue'),
-    linesSlider: document.getElementById('linesSlider'),
-    linesValue: document.getElementById('linesValue'),
-    syntaxHighlight: document.getElementById('syntaxHighlight'),
-    showLineNumbers: document.getElementById('showLineNumbers'),
-    fontFamilySelect: document.getElementById('fontFamilySelect'),
-    wrapWidthSlider: document.getElementById('wrapWidthSlider'),
-    wrapWidthValue: document.getElementById('wrapWidthValue'),
-    paddingSlider: document.getElementById('paddingSlider'),
-    paddingValue: document.getElementById('paddingValue'),
-    cursorSpeedSlider: document.getElementById('cursorSpeedSlider'),
-    cursorSpeedValue: document.getElementById('cursorSpeedValue'),
-    highlightCurrentLine: document.getElementById('highlightCurrentLine'),
-    highContrast: document.getElementById('highContrast'),
-    autoLoop: document.getElementById('autoLoop'),
-    startAssembled: document.getElementById('startAssembled'),
-    resetSettingsBtn: document.getElementById('resetSettingsBtn'),
+    typingSettingsPanel: document.querySelector('[data-settings-panel="typing"]'),
+    presentationSettingsPanel: document.querySelector('[data-settings-panel="presentation"]'),
+
+    typingSpeedSlider: document.getElementById('typingSpeedSlider'),
+    typingSpeedValue: document.getElementById('typingSpeedValue'),
+    typingBlockSizeSlider: document.getElementById('typingBlockSizeSlider'),
+    typingBlockSizeValue: document.getElementById('typingBlockSizeValue'),
+    typingLinesSlider: document.getElementById('typingLinesSlider'),
+    typingLinesValue: document.getElementById('typingLinesValue'),
+    typingFontFamilySelect: document.getElementById('typingFontFamilySelect'),
+    typingWrapWidthSlider: document.getElementById('typingWrapWidthSlider'),
+    typingWrapWidthValue: document.getElementById('typingWrapWidthValue'),
+    typingPaddingSlider: document.getElementById('typingPaddingSlider'),
+    typingPaddingValue: document.getElementById('typingPaddingValue'),
+    typingCursorSpeedSlider: document.getElementById('typingCursorSpeedSlider'),
+    typingCursorSpeedValue: document.getElementById('typingCursorSpeedValue'),
+    typingSyntaxHighlight: document.getElementById('typingSyntaxHighlight'),
+    typingShowLineNumbers: document.getElementById('typingShowLineNumbers'),
+    typingHighlightCurrentLine: document.getElementById('typingHighlightCurrentLine'),
+    typingHighContrast: document.getElementById('typingHighContrast'),
+    typingAutoLoop: document.getElementById('typingAutoLoop'),
+    typingStartAssembled: document.getElementById('typingStartAssembled'),
+    resetTypingSettingsBtn: document.getElementById('resetTypingSettingsBtn'),
+
+    presentationSpeedSlider: document.getElementById('presentationSpeedSlider'),
+    presentationSpeedValue: document.getElementById('presentationSpeedValue'),
+    presentationSlideDelaySlider: document.getElementById('presentationSlideDelaySlider'),
+    presentationSlideDelayValue: document.getElementById('presentationSlideDelayValue'),
+    presentationPlaybackMode: document.getElementById('presentationPlaybackMode'),
+    presentationAutoLoop: document.getElementById('presentationAutoLoop'),
+    presentationSummaryMode: document.getElementById('presentationSummaryMode'),
+    presentationStageTheme: document.getElementById('presentationStageTheme'),
+    presentationTooltipDetail: document.getElementById('presentationTooltipDetail'),
+    presentationAgendaDensity: document.getElementById('presentationAgendaDensity'),
+    presentationShowProgress: document.getElementById('presentationShowProgress'),
+    resetPresentationSettingsBtn: document.getElementById('resetPresentationSettingsBtn'),
     
     playBtn: document.getElementById('playBtn'),
     previewContent: document.getElementById('previewContent'),
@@ -257,55 +352,125 @@ function initSidebarResizer() {
     setSidebarWidth(getSidebarWidth());
 }
 
+function syncTypingSettingsUI() {
+    const settings = state.typingSettings;
+
+    if (elements.typingSpeedSlider) {
+        elements.typingSpeedSlider.value = settings.speed;
+        elements.typingSpeedValue.textContent = settings.speed.toFixed(1) + 'x';
+    }
+
+    if (elements.typingBlockSizeSlider) {
+        elements.typingBlockSizeSlider.value = settings.blockSize;
+        elements.typingBlockSizeValue.textContent = settings.blockSize + 'px';
+    }
+
+    if (elements.typingLinesSlider) {
+        elements.typingLinesSlider.value = settings.linesPerBlock;
+        elements.typingLinesValue.textContent = settings.linesPerBlock;
+    }
+
+    if (elements.typingFontFamilySelect) {
+        elements.typingFontFamilySelect.value = settings.fontFamily;
+    }
+
+    if (elements.typingWrapWidthSlider) {
+        elements.typingWrapWidthSlider.value = settings.wrapWidth;
+        elements.typingWrapWidthValue.textContent = settings.wrapWidth + 'vw';
+    }
+
+    if (elements.typingPaddingSlider) {
+        elements.typingPaddingSlider.value = settings.bottomPadding;
+        elements.typingPaddingValue.textContent = settings.bottomPadding + 'px';
+    }
+
+    if (elements.typingCursorSpeedSlider) {
+        elements.typingCursorSpeedSlider.value = settings.cursorBlinkSpeed;
+        elements.typingCursorSpeedValue.textContent = settings.cursorBlinkSpeed.toFixed(1) + 's';
+    }
+
+    if (elements.typingSyntaxHighlight) {
+        elements.typingSyntaxHighlight.checked = settings.syntaxHighlight;
+    }
+    if (elements.typingShowLineNumbers) {
+        elements.typingShowLineNumbers.checked = settings.showLineNumbers;
+    }
+    if (elements.typingHighlightCurrentLine) {
+        elements.typingHighlightCurrentLine.checked = settings.highlightCurrentLine;
+    }
+    if (elements.typingHighContrast) {
+        elements.typingHighContrast.checked = settings.highContrast;
+    }
+    if (elements.typingAutoLoop) {
+        elements.typingAutoLoop.checked = settings.autoLoop;
+    }
+    if (elements.typingStartAssembled) {
+        elements.typingStartAssembled.checked = settings.startAssembled;
+    }
+}
+
+function syncPresentationSettingsUI() {
+    const settings = state.presentationSettings;
+
+    if (elements.presentationSpeedSlider) {
+        elements.presentationSpeedSlider.value = settings.speed;
+        elements.presentationSpeedValue.textContent = settings.speed.toFixed(1) + 'x';
+    }
+
+    if (elements.presentationSlideDelaySlider) {
+        elements.presentationSlideDelaySlider.value = settings.perSlideDuration;
+        elements.presentationSlideDelayValue.textContent = `${settings.perSlideDuration}s`;
+    }
+
+    if (elements.presentationPlaybackMode) {
+        elements.presentationPlaybackMode.value = settings.playbackMode;
+    }
+
+    if (elements.presentationAutoLoop) {
+        elements.presentationAutoLoop.checked = settings.autoLoop;
+    }
+
+    if (elements.presentationSummaryMode) {
+        elements.presentationSummaryMode.value = settings.summaryMode;
+    }
+
+    if (elements.presentationStageTheme) {
+        elements.presentationStageTheme.value = settings.stageTheme;
+    }
+
+    if (elements.presentationTooltipDetail) {
+        elements.presentationTooltipDetail.value = settings.tooltipDetail;
+    }
+
+    if (elements.presentationAgendaDensity) {
+        elements.presentationAgendaDensity.value = settings.agendaDensity;
+    }
+
+    if (elements.presentationShowProgress) {
+        elements.presentationShowProgress.checked = settings.showProgressBadge;
+    }
+}
+
+function updateSettingsPanelState() {
+    const isPresentation = state.selectedStyle === PRESENTATION_STYLE;
+
+    if (elements.typingSettingsPanel) {
+        const active = !isPresentation;
+        elements.typingSettingsPanel.classList.toggle('active', active);
+        elements.typingSettingsPanel.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
+
+    if (elements.presentationSettingsPanel) {
+        const active = isPresentation;
+        elements.presentationSettingsPanel.classList.toggle('active', active);
+        elements.presentationSettingsPanel.setAttribute('aria-disabled', active ? 'false' : 'true');
+    }
+}
+
 function syncSettingsUI() {
-    elements.speedSlider.value = state.settings.speed;
-    elements.speedValue.textContent = state.settings.speed.toFixed(1) + 'x';
-
-    elements.blockSizeSlider.value = state.settings.blockSize;
-    elements.blockSizeValue.textContent = state.settings.blockSize + 'px';
-
-    elements.linesSlider.value = state.settings.linesPerBlock;
-    elements.linesValue.textContent = state.settings.linesPerBlock;
-
-    elements.syntaxHighlight.checked = state.settings.syntaxHighlight;
-    elements.showLineNumbers.checked = state.settings.showLineNumbers;
-    if (elements.highlightCurrentLine) {
-        elements.highlightCurrentLine.checked = state.settings.highlightCurrentLine;
-    }
-    if (elements.highContrast) {
-        elements.highContrast.checked = state.settings.highContrast;
-    }
-    if (elements.autoLoop) {
-        elements.autoLoop.checked = state.settings.autoLoop;
-    }
-    if (elements.startAssembled) {
-        elements.startAssembled.checked = state.settings.startAssembled;
-    }
-
-    if (elements.fontFamilySelect) {
-        elements.fontFamilySelect.value = state.settings.fontFamily;
-    }
-
-    if (elements.wrapWidthSlider) {
-        elements.wrapWidthSlider.value = state.settings.wrapWidth;
-    }
-    if (elements.wrapWidthValue) {
-        elements.wrapWidthValue.textContent = state.settings.wrapWidth + 'vw';
-    }
-
-    if (elements.paddingSlider) {
-        elements.paddingSlider.value = state.settings.bottomPadding;
-    }
-    if (elements.paddingValue) {
-        elements.paddingValue.textContent = state.settings.bottomPadding + 'px';
-    }
-
-    if (elements.cursorSpeedSlider) {
-        elements.cursorSpeedSlider.value = state.settings.cursorBlinkSpeed;
-    }
-    if (elements.cursorSpeedValue) {
-        elements.cursorSpeedValue.textContent = state.settings.cursorBlinkSpeed.toFixed(1) + 's';
-    }
+    syncTypingSettingsUI();
+    syncPresentationSettingsUI();
+    updateSettingsPanelState();
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -351,7 +516,7 @@ async function loadFile(filePath) {
         // Update UI
         updateFileInfo(result);
         updatePreview();
-    updateActionAvailability();
+        updateActionAvailability();
         
         showToast('File loaded successfully ', 'success');
         
@@ -393,15 +558,16 @@ function updatePreview() {
 function updateTypingPreview() {
     const lines = state.fileContent.split('\n');
     const totalLines = lines.length;
-    const blocks = Math.ceil(totalLines / state.settings.linesPerBlock);
-    const wrapWidth = Math.min(Math.max(state.settings.wrapWidth || 70, 40), 120);
-    const fontFamily = resolveFontFamily(state.settings.fontFamily);
+    const settings = state.typingSettings;
+    const blocks = Math.ceil(totalLines / settings.linesPerBlock);
+    const wrapWidth = Math.min(Math.max(settings.wrapWidth || 70, 40), 120);
+    const fontFamily = resolveFontFamily(settings.fontFamily);
 
     let previewHTML = `<div class="code-preview" style="font-family: ${fontFamily};">`;
     previewHTML += `<pre style="font-size: 0.875rem; color: #cbd5e1; line-height: 1.5; white-space: pre-wrap; max-width: min(${wrapWidth}vw, 900px);">`;
 
     const previewLines = lines.slice(0, 20);
-    if (state.settings.syntaxHighlight) {
+    if (settings.syntaxHighlight) {
         previewHTML += highlightCode(previewLines.join('\n'));
     } else {
         previewHTML += escapeHtml(previewLines.join('\n'));
@@ -414,7 +580,7 @@ function updateTypingPreview() {
     previewHTML += '</pre></div>';
 
     elements.previewContent.innerHTML = previewHTML;
-    elements.previewStats.innerHTML = ` ${totalLines} lines • ${blocks} blocks • ${state.selectedStyle} style • wrap ${wrapWidth}vw`;
+    elements.previewStats.innerHTML = ` ${totalLines} lines • ${blocks} blocks • wrap ${wrapWidth}vw`;
 }
 
 function updatePresentationPreview() {
@@ -473,8 +639,9 @@ function updatePresentationPreview() {
                 </footer>
             </div>`;
 
-        const progressText = total > 0 ? `${completed}/${total} tasks done` : 'No tracked tasks';
-        elements.previewStats.innerHTML = ` ${slideTitles.length} slides • ${progressText}`;
+    const progressText = total > 0 ? `${completed}/${total} tasks done` : 'No tracked tasks';
+    const autoplayLabel = state.presentationSettings.autoLoop ? 'autoplay on' : 'autoplay off';
+    elements.previewStats.innerHTML = ` ${slideTitles.length} slides • ${progressText} • ${autoplayLabel}`;
     } catch (error) {
         console.error('Presentation preview error:', error);
         elements.previewContent.innerHTML = `
@@ -524,6 +691,153 @@ function updateActionAvailability() {
     elements.playBtn.disabled = !canPlay;
 }
 
+function setWorkspaceHelpVisibility(visible) {
+    if (!elements.workspaceHelpContent || !elements.toggleWorkspaceHelpBtn) {
+        return;
+    }
+
+    const content = elements.workspaceHelpContent;
+    const toggle = elements.toggleWorkspaceHelpBtn;
+
+    if (visible) {
+        content.classList.remove('is-collapsed');
+        content.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.textContent = 'Hide workspace quick start / ซ่อนวิธีใช้งาน';
+    } else {
+        content.classList.add('is-collapsed');
+        content.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Show workspace quick start / แสดงวิธีใช้งาน';
+    }
+
+    toggle.dataset.visible = String(visible);
+}
+
+function toggleWorkspaceHelp() {
+    if (!elements.workspaceHelpContent || !elements.toggleWorkspaceHelpBtn) {
+        return;
+    }
+
+    const isVisible = elements.workspaceHelpContent.hidden === false;
+    setWorkspaceHelpVisibility(!isVisible);
+}
+
+setWorkspaceHelpVisibility(false);
+
+function applyWorkspacePath(nodes, value, fallback) {
+    if (!nodes) {
+        return;
+    }
+
+    const items = Array.isArray(nodes) ? nodes : Array.from(nodes);
+    items.forEach((node) => {
+        if (!node) {
+            return;
+        }
+        node.textContent = value || fallback;
+    });
+}
+
+function updateWorkspaceGuidance(info) {
+    if (!info || info.success === false) {
+        return;
+    }
+
+    const candidates = info.candidates || [];
+    const primaryPath = info.activePath || (candidates.find(candidate => candidate.exists)?.path);
+
+    applyWorkspacePath(elements.workspacePrimaryPathSlots, primaryPath, 'workspace/');
+
+    const devCandidate = candidates.find(candidate => candidate.type === 'project');
+    const packagedCandidate = candidates.find(candidate => ['resources', 'installed', 'runtime', 'dist'].includes(candidate.type) && candidate.exists)
+        || candidates.find(candidate => ['resources', 'installed', 'runtime', 'dist'].includes(candidate.type));
+    const userCandidate = candidates.find(candidate => candidate.type === 'user');
+
+    applyWorkspacePath(elements.workspaceDevPathSlots, devCandidate?.path, 'workspace/');
+    applyWorkspacePath(elements.workspacePackagedPathSlots, packagedCandidate?.path || primaryPath, 'workspace/');
+    applyWorkspacePath(elements.workspaceUserPathSlots, userCandidate?.path, 'userData/workspace');
+
+    if (elements.workspaceHint && primaryPath) {
+        elements.workspaceHint.setAttribute('data-workspace-ready', 'true');
+    }
+}
+
+async function hydrateWorkspacePanel() {
+    if (!window.electronAPI || typeof window.electronAPI.getWorkspaceInfo !== 'function') {
+        return;
+    }
+
+    try {
+        const info = await window.electronAPI.getWorkspaceInfo();
+        updateWorkspaceGuidance(info);
+    } catch (error) {
+        console.warn('Workspace info retrieval failed:', error);
+    }
+}
+
+async function openWorkspaceFolderFromUI() {
+    if (!window.electronAPI || typeof window.electronAPI.openWorkspaceFolder !== 'function') {
+        showToast('Workspace shortcut unavailable in this build', 'warning');
+        return;
+    }
+
+    try {
+        const result = await window.electronAPI.openWorkspaceFolder();
+        if (!result || result.success !== true) {
+            throw new Error(result?.error || 'Unknown renderer bridge error');
+        }
+        showToast('Workspace folder opened in Explorer', 'success');
+    } catch (error) {
+        console.error('Workspace folder open error:', error);
+        showToast('Failed to open workspace folder: ' + error.message, 'error');
+    }
+}
+
+async function openWorkspaceGuide(language, successMessage) {
+    try {
+        if (!window.electronAPI || typeof window.electronAPI.openWorkspaceGuide !== 'function') {
+            throw new Error('workspace:openGuide handler unavailable');
+        }
+
+        const result = await window.electronAPI.openWorkspaceGuide(language);
+        if (!result || result.success !== true) {
+            throw new Error(result?.error || 'Unknown renderer bridge error');
+        }
+        if (successMessage) {
+            showToast(successMessage, 'info');
+        }
+    } catch (error) {
+        console.error('Workspace guide open error:', error);
+        const message = error?.message || '';
+        if (/no handler/i.test(message) || /unavailable/i.test(message) || /guide not found/i.test(message)) {
+            await openWorkspaceGuideOnline(language);
+            return;
+        }
+        showToast('Failed to open workspace guide: ' + message, 'error');
+    }
+}
+
+async function openWorkspaceGuideOnline(language) {
+    try {
+        if (!window.electronAPI || typeof window.electronAPI.openWorkspaceGuideOnline !== 'function') {
+            throw new Error('Online guide bridge unavailable');
+        }
+
+        const result = await window.electronAPI.openWorkspaceGuideOnline(language);
+        if (!result || result.success !== true) {
+            throw new Error(result?.error || 'Unknown renderer bridge error');
+        }
+        showToast('Opened online workspace guide in browser', 'info');
+    } catch (error) {
+        console.error('Workspace guide online open error:', error);
+        const fallbackUrl = language === 'th'
+            ? 'https://github.com/chahuadev/chahua-code-animator/blob/main/docs/th/WORKSPACE_GUIDE.md'
+            : 'https://github.com/chahuadev/chahua-code-animator/blob/main/docs/en/WORKSPACE_GUIDE.md';
+        showToast('Guide unavailable locally. Open manually: ' + fallbackUrl, 'warning');
+    }
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //                         Drag & Drop
 // ══════════════════════════════════════════════════════════════════════════════
@@ -555,6 +869,34 @@ elements.dropZone.addEventListener('drop', async (e) => {
 // File Selection
 elements.selectFileBtn.addEventListener('click', handleFileSelect);
 
+if (elements.openWorkspaceFolderBtn) {
+    elements.openWorkspaceFolderBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        void openWorkspaceFolderFromUI();
+    });
+}
+
+if (elements.openWorkspaceGuideEnBtn) {
+    elements.openWorkspaceGuideEnBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        void openWorkspaceGuide('en', 'Opened workspace guide (English)');
+    });
+}
+
+if (elements.openWorkspaceGuideThBtn) {
+    elements.openWorkspaceGuideThBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        void openWorkspaceGuide('th', 'เปิดคู่มือการใช้งานภาษาไทยแล้ว');
+    });
+}
+
+if (elements.toggleWorkspaceHelpBtn) {
+    elements.toggleWorkspaceHelpBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        toggleWorkspaceHelp();
+    });
+}
+
 // Style Selection
 elements.styleCards.forEach(card => {
     card.addEventListener('click', () => {
@@ -562,6 +904,7 @@ elements.styleCards.forEach(card => {
         card.classList.add('active');
         const nextStyle = card.dataset.style;
         state.selectedStyle = nextStyle;
+        updateSettingsPanelState();
         
         if (state.fileContent) {
             updatePreview();
@@ -577,104 +920,209 @@ elements.styleCards.forEach(card => {
     });
 });
 
-// Settings
-elements.speedSlider.addEventListener('input', (e) => {
-    state.settings.speed = parseFloat(e.target.value);
-    elements.speedValue.textContent = state.settings.speed.toFixed(1) + 'x';
-});
-
-elements.blockSizeSlider.addEventListener('input', (e) => {
-    state.settings.blockSize = parseInt(e.target.value);
-    elements.blockSizeValue.textContent = state.settings.blockSize + 'px';
-});
-
-elements.linesSlider.addEventListener('input', (e) => {
-    state.settings.linesPerBlock = parseInt(e.target.value);
-    elements.linesValue.textContent = state.settings.linesPerBlock;
-    
-    if (state.fileContent) {
+// Settings helpers
+function refreshTypingPreviewIfActive() {
+    if (state.selectedStyle !== PRESENTATION_STYLE && state.fileContent) {
         updatePreview();
     }
-});
+}
 
-elements.syntaxHighlight.addEventListener('change', (e) => {
-    state.settings.syntaxHighlight = e.target.checked;
-    
-    if (state.fileContent) {
+function refreshPresentationPreviewIfActive() {
+    if (state.selectedStyle === PRESENTATION_STYLE && state.fileContent) {
         updatePreview();
     }
-});
+}
 
-elements.showLineNumbers.addEventListener('change', (e) => {
-    state.settings.showLineNumbers = e.target.checked;
-});
-
-if (elements.fontFamilySelect) {
-    elements.fontFamilySelect.addEventListener('change', (e) => {
-        state.settings.fontFamily = e.target.value;
-        if (state.fileContent) {
-            updatePreview();
-        }
+// Settings — Typing Mode
+if (elements.typingSpeedSlider) {
+    elements.typingSpeedSlider.addEventListener('input', (e) => {
+        state.typingSettings.speed = parseFloat(e.target.value);
+        elements.typingSpeedValue.textContent = state.typingSettings.speed.toFixed(1) + 'x';
+        persistSettings('typing');
     });
 }
 
-if (elements.wrapWidthSlider && elements.wrapWidthValue) {
-    elements.wrapWidthSlider.addEventListener('input', (e) => {
-        state.settings.wrapWidth = parseInt(e.target.value, 10);
-        elements.wrapWidthValue.textContent = state.settings.wrapWidth + 'vw';
-        if (state.fileContent) {
-            updatePreview();
-        }
+if (elements.typingBlockSizeSlider) {
+    elements.typingBlockSizeSlider.addEventListener('input', (e) => {
+        state.typingSettings.blockSize = parseInt(e.target.value, 10);
+        elements.typingBlockSizeValue.textContent = state.typingSettings.blockSize + 'px';
+        persistSettings('typing');
     });
 }
 
-if (elements.paddingSlider && elements.paddingValue) {
-    elements.paddingSlider.addEventListener('input', (e) => {
-        state.settings.bottomPadding = parseInt(e.target.value, 10);
-        elements.paddingValue.textContent = state.settings.bottomPadding + 'px';
+if (elements.typingLinesSlider) {
+    elements.typingLinesSlider.addEventListener('input', (e) => {
+        state.typingSettings.linesPerBlock = parseInt(e.target.value, 10);
+        elements.typingLinesValue.textContent = state.typingSettings.linesPerBlock;
+        persistSettings('typing');
+        refreshTypingPreviewIfActive();
     });
 }
 
-if (elements.cursorSpeedSlider && elements.cursorSpeedValue) {
-    elements.cursorSpeedSlider.addEventListener('input', (e) => {
-        state.settings.cursorBlinkSpeed = parseFloat(e.target.value);
-        elements.cursorSpeedValue.textContent = state.settings.cursorBlinkSpeed.toFixed(1) + 's';
+if (elements.typingSyntaxHighlight) {
+    elements.typingSyntaxHighlight.addEventListener('change', (e) => {
+        state.typingSettings.syntaxHighlight = e.target.checked;
+        persistSettings('typing');
+        refreshTypingPreviewIfActive();
     });
 }
 
-if (elements.highlightCurrentLine) {
-    elements.highlightCurrentLine.addEventListener('change', (e) => {
-        state.settings.highlightCurrentLine = e.target.checked;
+if (elements.typingShowLineNumbers) {
+    elements.typingShowLineNumbers.addEventListener('change', (e) => {
+        state.typingSettings.showLineNumbers = e.target.checked;
+        persistSettings('typing');
     });
 }
 
-if (elements.highContrast) {
-    elements.highContrast.addEventListener('change', (e) => {
-        state.settings.highContrast = e.target.checked;
+if (elements.typingFontFamilySelect) {
+    elements.typingFontFamilySelect.addEventListener('change', (e) => {
+        state.typingSettings.fontFamily = e.target.value;
+        persistSettings('typing');
+        refreshTypingPreviewIfActive();
     });
 }
 
-if (elements.autoLoop) {
-    elements.autoLoop.addEventListener('change', (e) => {
-        state.settings.autoLoop = e.target.checked;
+if (elements.typingWrapWidthSlider && elements.typingWrapWidthValue) {
+    elements.typingWrapWidthSlider.addEventListener('input', (e) => {
+        state.typingSettings.wrapWidth = parseInt(e.target.value, 10);
+        elements.typingWrapWidthValue.textContent = state.typingSettings.wrapWidth + 'vw';
+        persistSettings('typing');
+        refreshTypingPreviewIfActive();
     });
 }
 
-if (elements.startAssembled) {
-    elements.startAssembled.addEventListener('change', (e) => {
-        state.settings.startAssembled = e.target.checked;
+if (elements.typingPaddingSlider && elements.typingPaddingValue) {
+    elements.typingPaddingSlider.addEventListener('input', (e) => {
+        state.typingSettings.bottomPadding = parseInt(e.target.value, 10);
+        elements.typingPaddingValue.textContent = state.typingSettings.bottomPadding + 'px';
+        persistSettings('typing');
     });
 }
 
-if (elements.resetSettingsBtn) {
-    elements.resetSettingsBtn.addEventListener('click', (e) => {
+if (elements.typingCursorSpeedSlider && elements.typingCursorSpeedValue) {
+    elements.typingCursorSpeedSlider.addEventListener('input', (e) => {
+        state.typingSettings.cursorBlinkSpeed = parseFloat(e.target.value);
+        elements.typingCursorSpeedValue.textContent = state.typingSettings.cursorBlinkSpeed.toFixed(1) + 's';
+        persistSettings('typing');
+    });
+}
+
+if (elements.typingHighlightCurrentLine) {
+    elements.typingHighlightCurrentLine.addEventListener('change', (e) => {
+        state.typingSettings.highlightCurrentLine = e.target.checked;
+        persistSettings('typing');
+    });
+}
+
+if (elements.typingHighContrast) {
+    elements.typingHighContrast.addEventListener('change', (e) => {
+        state.typingSettings.highContrast = e.target.checked;
+        persistSettings('typing');
+    });
+}
+
+if (elements.typingAutoLoop) {
+    elements.typingAutoLoop.addEventListener('change', (e) => {
+        state.typingSettings.autoLoop = e.target.checked;
+        persistSettings('typing');
+    });
+}
+
+if (elements.typingStartAssembled) {
+    elements.typingStartAssembled.addEventListener('change', (e) => {
+        state.typingSettings.startAssembled = e.target.checked;
+        persistSettings('typing');
+    });
+}
+
+if (elements.resetTypingSettingsBtn) {
+    elements.resetTypingSettingsBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        state.settings = { ...DEFAULT_SETTINGS };
-        syncSettingsUI();
-        if (state.fileContent) {
-            updatePreview();
-        }
-        showToast('Settings reset to defaults', 'info');
+        state.typingSettings = { ...DEFAULT_TYPING_SETTINGS };
+        persistSettings('typing');
+        syncTypingSettingsUI();
+        refreshTypingPreviewIfActive();
+        showToast('Typing settings reset to defaults', 'info');
+    });
+}
+
+// Settings — Presentation Mode
+if (elements.presentationSpeedSlider) {
+    elements.presentationSpeedSlider.addEventListener('input', (e) => {
+        state.presentationSettings.speed = parseFloat(e.target.value);
+        elements.presentationSpeedValue.textContent = state.presentationSettings.speed.toFixed(1) + 'x';
+        persistSettings('presentation');
+        refreshPresentationPreviewIfActive();
+    });
+}
+
+if (elements.presentationSlideDelaySlider) {
+    elements.presentationSlideDelaySlider.addEventListener('input', (e) => {
+        state.presentationSettings.perSlideDuration = parseInt(e.target.value, 10);
+        elements.presentationSlideDelayValue.textContent = `${state.presentationSettings.perSlideDuration}s`;
+        persistSettings('presentation');
+    });
+}
+
+if (elements.presentationPlaybackMode) {
+    elements.presentationPlaybackMode.addEventListener('change', (e) => {
+        state.presentationSettings.playbackMode = e.target.value;
+        persistSettings('presentation');
+    });
+}
+
+if (elements.presentationAutoLoop) {
+    elements.presentationAutoLoop.addEventListener('change', (e) => {
+        state.presentationSettings.autoLoop = e.target.checked;
+        persistSettings('presentation');
+        refreshPresentationPreviewIfActive();
+    });
+}
+
+if (elements.presentationSummaryMode) {
+    elements.presentationSummaryMode.addEventListener('change', (e) => {
+        state.presentationSettings.summaryMode = e.target.value;
+        persistSettings('presentation');
+    });
+}
+
+if (elements.presentationStageTheme) {
+    elements.presentationStageTheme.addEventListener('change', (e) => {
+        state.presentationSettings.stageTheme = e.target.value;
+        persistSettings('presentation');
+    });
+}
+
+if (elements.presentationTooltipDetail) {
+    elements.presentationTooltipDetail.addEventListener('change', (e) => {
+        state.presentationSettings.tooltipDetail = e.target.value;
+        persistSettings('presentation');
+    });
+}
+
+if (elements.presentationAgendaDensity) {
+    elements.presentationAgendaDensity.addEventListener('change', (e) => {
+        state.presentationSettings.agendaDensity = e.target.value;
+        persistSettings('presentation');
+    });
+}
+
+if (elements.presentationShowProgress) {
+    elements.presentationShowProgress.addEventListener('change', (e) => {
+        state.presentationSettings.showProgressBadge = e.target.checked;
+        persistSettings('presentation');
+        refreshPresentationPreviewIfActive();
+    });
+}
+
+if (elements.resetPresentationSettingsBtn) {
+    elements.resetPresentationSettingsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.presentationSettings = { ...DEFAULT_PRESENTATION_SETTINGS };
+        persistSettings('presentation');
+        syncPresentationSettingsUI();
+        refreshPresentationPreviewIfActive();
+        showToast('Presentation settings reset to defaults', 'info');
     });
 }
 
@@ -701,11 +1149,12 @@ elements.playBtn.addEventListener('click', async () => {
         
         // Transfer animation data
         setTimeout(async () => {
+            const payloadSettings = JSON.parse(JSON.stringify(getActiveSettings()));
             const transferResult = await window.electronAPI.transferAnimationData({
                 code: state.fileContent,
                 fileName: state.currentFile,
                 style: state.selectedStyle,
-                settings: state.settings
+                settings: payloadSettings
             });
             
             if (transferResult.success) {
@@ -786,7 +1235,9 @@ elements.exportLogBtn.addEventListener('click', async () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 initSidebarResizer();
+loadPersistedSettings();
 syncSettingsUI();
+void hydrateWorkspacePanel();
 updateActionAvailability();
 
 console.log(' Chahua Code Animator initialized');

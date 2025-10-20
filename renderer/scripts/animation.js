@@ -695,6 +695,7 @@ class PresentationAnimation {
         this.autoTimer = null;
         this.keyHandler = null;
         this.onWrapperClick = null;
+        this.playDirection = 1;
     }
 
     start() {
@@ -1044,13 +1045,36 @@ class PresentationAnimation {
             return;
         }
 
+        const playbackMode = this.settings?.playbackMode || 'loop';
+
+        if (!manual && playbackMode === 'once' && this.currentIndex >= total - 1) {
+            this.stopAutoPlay();
+            return;
+        }
+
+        if (!manual && playbackMode === 'bounce') {
+            if (this.playDirection === 1 && this.currentIndex >= total - 1) {
+                this.playDirection = -1;
+            } else if (this.playDirection === -1 && this.currentIndex <= 0) {
+                this.playDirection = 1;
+            }
+
+            const targetIndex = this.currentIndex + this.playDirection;
+            this.showSlide(Math.min(Math.max(targetIndex, 0), total - 1));
+            return;
+        }
+
         if (this.currentIndex < total - 1) {
             this.showSlide(this.currentIndex + 1);
         } else {
+            if (!manual && playbackMode === 'once') {
+                this.stopAutoPlay();
+                return;
+            }
             this.showSlide(0);
         }
 
-        if (manual && this.settings.autoLoop) {
+        if (manual && this.settings.autoLoop && playbackMode !== 'once') {
             this.restartAutoPlay();
         }
     }
@@ -1067,7 +1091,7 @@ class PresentationAnimation {
             this.showSlide(total - 1);
         }
 
-        if (manual && this.settings.autoLoop) {
+        if (manual && this.settings.autoLoop && (this.settings?.playbackMode || 'loop') !== 'once') {
             this.restartAutoPlay();
         }
     }
@@ -1081,8 +1105,11 @@ class PresentationAnimation {
             return;
         }
 
+        this.playDirection = 1;
+
         const speedFactor = Math.max(Number(this.settings.speed) || 1, 0.2);
-        const interval = Math.max(5000 / speedFactor, 2500);
+        const durationSeconds = Math.max(Number(this.settings.perSlideDuration) || 6, 1.5);
+        const interval = Math.max((durationSeconds * 1000) / speedFactor, 1200);
 
         this.autoTimer = setInterval(() => {
             this.nextSlide(false);
@@ -1094,6 +1121,7 @@ class PresentationAnimation {
             clearInterval(this.autoTimer);
             this.autoTimer = null;
         }
+        this.playDirection = 1;
     }
 
     restartAutoPlay() {
@@ -1117,13 +1145,13 @@ class PresentationAnimation {
             } else if (event.key === 'Home') {
                 event.preventDefault();
                 this.showSlide(0);
-                if (this.settings.autoLoop) {
+                if (this.settings.autoLoop && (this.settings?.playbackMode || 'loop') !== 'once') {
                     this.restartAutoPlay();
                 }
             } else if (event.key === 'End') {
                 event.preventDefault();
                 this.showSlide(this.slideElements.length - 1);
-                if (this.settings.autoLoop) {
+                if (this.settings.autoLoop && (this.settings?.playbackMode || 'loop') !== 'once') {
                     this.restartAutoPlay();
                 }
             }
