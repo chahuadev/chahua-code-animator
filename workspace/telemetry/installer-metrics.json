@@ -1,0 +1,34 @@
+[
+  {
+    "platform": "windows",
+    "timestamp": "2025-10-20T08:49:36.009Z",
+    "commit": "28d2b46",
+    "artifacts": [
+      {
+        "name": "Chahua Code Animator-1.1.0-win-28d2b46.exe",
+        "sizeBytes": 144724167,
+        "sizeMB": 138.02
+      },
+      {
+        "name": "Chahua Code Animator-1.1.0-win-ia32-28d2b46.exe",
+        "sizeBytes": 67770861,
+        "sizeMB": 64.63
+      },
+      {
+        "name": "Chahua Code Animator-1.1.0-win-ia32-28d2b46.msi",
+        "sizeBytes": 78221312,
+        "sizeMB": 74.6
+      },
+      {
+        "name": "Chahua Code Animator-1.1.0-win-x64-28d2b46.exe",
+        "sizeBytes": 77349465,
+        "sizeMB": 73.77
+      },
+      {
+        "name": "Chahua Code Animator-1.1.0-win-x64-28d2b46.msi",
+        "sizeBytes": 87863296,
+        "sizeMB": 83.79
+      }
+    ]
+  }
+]

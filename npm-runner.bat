@@ -1,15 +1,15 @@
 @echo off
 chcp 65001 > nul
 color 0A
-title Chahuadev Framework Desktop Builder
+title Chahua Code Animator Task Runner
 
 echo.
 
 :MENU
 cls
 echo ╔════════════════════════════════════════════════════════════════════════════════╗
-echo ║                        🚀 Chahuadev Framework Desktop Builder                  ║
-echo ║                                    Version 1.0.0                              ║
+echo ║                           🚀 Chahua Code Animator Toolkit                      ║
+echo ║                                    Version 1.1.0                              ║
 echo ╚════════════════════════════════════════════════════════════════════════════════╝
 echo.
 echo.
@@ -21,8 +21,8 @@ echo    [4] npm test      (รันเทส)
 echo.
 echo   --- Build & Package ---
 echo    [7] npm run build (Build โปรเจกต์)
-echo    [8] npm run pack  (Pack เป็น Unpacked Folder)
-echo    [9] npm run dist  (สร้างไฟล์ติดตั้ง)
+echo    [8] npm run build:win (Build Windows Artifacts)
+echo    [9] npm run dist:win  (สร้างตัวติดตั้ง Windows พร้อม Metrics)
 echo.
 echo   --- Utilities ---
 echo    [5] Open Folder   (เปิดโฟลเดอร์นี้ใน Explorer)
@@ -44,8 +44,8 @@ if "%CHOICE%"=="4" goto TEST
 if "%CHOICE%"=="5" goto OPEN_FOLDER
 if "%CHOICE%"=="6" goto OPEN_CODE
 if "%CHOICE%"=="7" goto BUILD
-if "%CHOICE%"=="8" goto PACK
-if "%CHOICE%"=="9" goto DIST
+if "%CHOICE%"=="8" goto BUILD_WIN
+if "%CHOICE%"=="9" goto DIST_WIN
 if "%CHOICE%"=="0" goto EXIT
 
 :: ถ้าพิมพ์ผิด
@@ -108,23 +108,23 @@ echo ########## 'npm run build' finished. ##########
 pause
 goto MENU
 
-:PACK
+:BUILD_WIN
 cls
-echo ########## Running npm run pack ##########
+echo ########## Running npm run build:win ##########
 echo.
-call npm run pack
+call npm run build:win
 echo.
-echo ########## 'npm run pack' finished. ##########
+echo ########## 'npm run build:win' finished. ##########
 pause
 goto MENU
 
-:DIST
+:DIST_WIN
 cls
-echo ########## Running npm run dist ##########
+echo ########## Running npm run dist:win ##########
 echo.
-call npm run dist
+call npm run dist:win
 echo.
-echo ########## 'npm run dist' finished. ##########
+echo ########## 'npm run dist:win' finished. ##########
 pause
 goto MENU
 
