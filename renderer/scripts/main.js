@@ -58,9 +58,9 @@ function resolveFontFamily(key) {
 
 function escapeHtml(source) {
     return source
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        .replace(/&/g, '')
+        .replace(/</g, '')
+        .replace(/>/g, '');
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

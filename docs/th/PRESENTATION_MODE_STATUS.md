@@ -1,163 +1,163 @@
-# Chahuadev Code Animator — Presentation Mode Status Report
+# Chahuadev Code Animator — รายงานสถานะโหมดการนำเสนอ
 
-**Last Updated:** 19 October 2025  
-**Author:** GitHub Copilot (AI Programming Assistant)
-
----
-
-## 1. Project Overview
-The "Presentation Mode" initiative transforms Chahua Code Animator from a code animation demo into a Markdown-driven slide engine. The renderer now ingests status reports (`.md`), condenses their narrative into presentation-friendly blocks, and animates them inside a dual-mode Electron window (Typing vs. Presentation). Work to date spans parsing utilities, renderer integration, UI controls, and iterative visual polish inspired by stakeholder feedback.
-
-The desktop application is distributed via:
-- **npm CLI:** `npm install -g @chahuadev/code-animator` then `chahua-code-animator --presentation`
-- **Direct executables:** Windows installer packages (`.exe` - NSIS) with automatic `workspace/` folder creation on first run
-- **Development:** `npm install` + `npm start` for active development and testing
+**อัปเดตล่าสุด:** 19 ตุลาคม 2025
+**ผู้เขียน:** GitHub Copilot (ผู้ช่วยการเขียนโปรแกรม AI)
 
 ---
 
-## 2. Step-by-Step Execution Plan
-Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pending).
+## 1. ภาพรวมโครงการ
+โครงการ "โหมดการนำเสนอ" ได้เปลี่ยน Chahua Code Animator จากเดโมแอนิเมชันโค้ดไปเป็นเอนจินสไลด์ที่ขับเคลื่อนด้วย Markdown ขณะนี้ตัวเรนเดอร์จะรับรายงานสถานะ (`.md`) ย่อเรื่องราวลงในบล็อกที่ใช้งานง่ายสำหรับการนำเสนอ และสร้างแอนิเมชันภายในหน้าต่าง Electron แบบสองโหมด (การพิมพ์เทียบกับการนำเสนอ) จนถึงปัจจุบัน งานที่ดำเนินการครอบคลุมถึงการแยกวิเคราะห์ยูทิลิตี้ การผสานรวมตัวเรนเดอร์ การควบคุม UI และการปรับปรุงภาพแบบวนซ้ำที่ได้รับแรงบันดาลใจจากความคิดเห็นของผู้มีส่วนได้ส่วนเสีย
 
-### Phase 1: Markdown Ingestion Pipeline (Complete)
-- [x] Create `renderer/scripts/presentation-utils.js` to parse Markdown into normalized section/slide data.
-- [x] Support headings, sub-headings, paragraphs, quotes, numbered and checklist items, preserving raw text metadata.
-- [x] Track global metadata (title, subtitle, author, last updated) for slide headers and progress summaries.
-
-### Phase 2: Presentation Rendering Architecture (Complete)
-- [x] Introduce `PresentationAnimation` class in `renderer/scripts/animation.js` with start/stop lifecycle, autoplay, and keyboard navigation.
-- [x] Generate slide DOM structures (title, agenda, progress, content) using the parsed model.
-- [x] Implement reusable rendering helpers for block lists, paragraphs, and quotes while avoiding innerHTML injection risks.
-
-### Phase 3: UI Integration & Desktop Flow (Complete)
-- [x] Extend `renderer/scripts/main.js` to expose Presentation mode selection, preview card, and settings toggles.
-- [x] Update `renderer/index.html` and `renderer/animation.html` to host new containers, overlay, and navigation markup.
-- [x] Wire IPC/bridge messaging so `main.js` delivers Markdown payloads to the animation window.
-
-### Phase 4: Visual Polish & Accessibility (Ongoing)
-> **Updates (19 October 2025):**
-> - Added extensible CSS themes (`renderer/styles/animation.css`, `renderer/styles/main.css`) featuring card layout, agenda styling, and navigation HUD.
-> - Refined spacing and overflow rules so slides stay within viewport boundaries; navigation bar no longer obscures content.
-> - Implemented pointer-pass-through on navigation capsule and click-to-advance gestures outside the slide body.
-> - Compressed long bullet text automatically while preserving full hover tooltips for auditors.
-
-#### Fixed Stage Layout Action Plan
-- [ ] Define a canonical stage size (e.g. 1920×1080 logical pixels at 16:9) and render all slide content inside this stage only.
-- [ ] Wrap the stage in a responsive viewport that scales the entire presentation via `transform: scale(...)` (or CSS `zoom`) based on available window space while preserving the aspect ratio.
-- [ ] Keep navigation HUD, overlays, and click targets anchored to the stage boundaries; remove layout assumptions that rely on viewport height/width directly.
-- [ ] Add safe padding and background treatment around the stage so excess screen space shows letter/pillar boxing rather than stretched UI elements.
-- [ ] Validate behaviour across common resolutions (1280×720, 1920×1080, 3840×2160) and window resizing to ensure content remains fully visible.
-- [ ] Update regression plan to include visual snapshots that confirm the stage borders remain aligned with the display frame.
-
-#### Settings Panel Separation Plan (Typing vs Presentation)
-- [ ] Audit `renderer/scripts/main.js` to detach the shared Settings card from the Animation Style selector so each mode controls only its own inputs.
-- [ ] Build a dedicated Presentation settings group (auto-loop, autoplay speed, summarisation strength) and isolate Typing parameters (character speed, block size, lines per block).
-- [ ] Refactor state handling so switching styles swaps settings panes without leaking values or labels between modes.
-- [ ] Update `renderer/index.html` structure and `renderer/styles/main.css` layout to present the panels side-by-side while keeping a cohesive visual hierarchy.
-- [ ] Adjust IPC/bridge messages so only the active mode’s configuration is sent to `renderer/scripts/animation.js`.
-- [ ] Document the new per-mode settings contract in README and this status report once implemented.
-
-> **Settings status:** Shared Settings currently function at roughly **70%** completeness—Typing mode reacts correctly, while Presentation-specific controls are only partially wired. Completing the plan above will remove the coupling and stabilise future feature work.
-> **Expected outcome:** Clearer UX (no shared sliders that do nothing), reduced cross-mode bugs, easier addition of Presentation-only options.
-> **Risks:** Requires coordinated UI + IPC refactor; potential regression if old preferences depend on shared keys. Mitigate by smoke-testing both modes and keeping legacy keys aliased during migration.
-
-- [ ] Localise UI strings (Thai/English) for presentation controls.
-- [ ] Restore "Browse Files" button alignment/hit-area to guarantee file dialog reliability after layout changes.
-- [ ] Persist last-opened Markdown path and remember preferred animation style across sessions.
-- [ ] Validate Markdown payload size and provide friendly errors when parsing fails.
-
-#### Security Hardening Status (security-core.js)
-- **Current coverage:** ~85% of the desktop safety contract is live (path traversal, symlink depth, file-size validation, SHA-256 integrity, rate limiting) for both Typing and Presentation flows.
-- [x] Enforce path traversal, symlink depth, and file-size checks before Presentation or Typing playback (blocks invalid Markdown immediately).
-- [x] Maintain SHA-256 integrity verification and rate limiting telemetry during Markdown ingestion.
-- [ ] Extend `security-core` audit logs to record presentation-mode lifecycle events (load, reject, autoplay start/stop) for traceability.
-- [ ] Surface security-core verdicts inside the Presentation window (non-blocking toast + “View log” link when a file is rejected).
-- [ ] Add automated Jest coverage around Markdown validation (valid/invalid paths, oversize files, tampered hashes) and ensure CI blocks on failure.
-- [ ] Document the security pipeline (README + README.th) with a flow diagram showing how Presentation mode calls security-core.
-- [ ] Evaluate additional sanitisation for inline Markdown links/images before rendering; strip remote URLs until sanitiser reaches parity.
-- [ ] Define release exit criteria: Presentation mode cannot ship until 100% of the above items pass automated checks and manual QA on Windows + macOS.
-
-#### Desktop Packaging & Distribution Plan (MSI / EXE / npm)
-- [x] Maintain Electron Builder configuration for Windows builds (`npm run build:win`).
-- [x] Remove deprecated `msi: true` option and verify `.exe` (NSIS) output alongside portable `.exe`.
-- [x] Document installer steps (smoking testing, first-run setup) in both README.md and README.th.md.
-- [x] Automate build artifact naming to include presentation-mode version and commit hash for traceability.
-- [x] Create empty `workspace/` folder in packaged app for telemetry and user data on first launch.
-- [x] Prepare npm distribution channel: trim package payload, define `bin` entry for the desktop launcher, and gate publish behind CI.
-- [x] Publish npm beta, validate `npx @chahuadev/code-animator --presentation` workflow, and document install commands in both READMEs.
-- [x] Capture npm install metrics (download counts, failure rates) and log alongside MSI telemetry each release.
-- [x] Establish release gate: no MSI/EXE/npm publish until presentation-mode + security tasks hit 100% completion.
-
-> **Latest packaging updates:** `package.json` now injects `COMMIT_HASH` during `npm run build:win`, enabling commit-tagged artifact names. The NSIS builder emits `.exe` (installer) and portable `.exe` outputs. The CLI (`@chahuadev/code-animator`) ships on npm with `npx` support, build metrics land in `workspace/telemetry/installer-metrics.json`, and first-run telemetry captures desktop vs. npm launch channels automatically. The `workspace/` folder is pre-created during application initialization to ensure user file storage and telemetry collection work reliably.
-
-### Phase 6: Advanced Presentation Features (Not Started)
-- [ ] Introduce timeline scripting (auto-advance per-slide timers, speaker notes overlay).
-- [ ] Add export options (PDF capture, static HTML deck).
-- [ ] Support embedded media blocks (images, code highlights) once summarisation pipeline matures.
+แอปพลิเคชันเดสก์ท็อปเผยแพร่ผ่าน:
+- **npm CLI:** `npm install -g @chahuadev/code-animator` จากนั้น `chahua-code-animator --presentation`
+- **ไฟล์ปฏิบัติการโดยตรง:** แพ็กเกจตัวติดตั้ง Windows (`.exe` - NSIS) พร้อมการสร้างโฟลเดอร์ `workspace/` อัตโนมัติเมื่อรันครั้งแรก
+- **การพัฒนา:** `npm install` + `npm start` สำหรับการพัฒนาและการทดสอบที่ใช้งานอยู่
 
 ---
 
-## 3. Module Register & Status
-The table below highlights key files that enable Presentation Mode.
+## 2. แผนการดำเนินการแบบทีละขั้นตอน
+แต่ละขั้นตอนด้านล่างใช้ช่องทำเครื่องหมายเพื่อระบุความคืบหน้า (`[x]` เสร็จสมบูรณ์, `[ ]` รอดำเนินการ)
 
-### Core Renderer Logic
-- [x] `renderer/scripts/animation.js` — Hosts `PresentationAnimation`; manages slide lifecycle, navigation, tooltips, and autoplay.
-- [x] `renderer/scripts/presentation-utils.js` — Parses Markdown and compacts content for slide consumption.
-- [x] `renderer/scripts/main.js` — Surface settings, preview, IPC wiring for Presentation mode.
+### ขั้นตอนที่ 1: ไพพ์ไลน์การนำเข้า Markdown (เสร็จสมบูรณ์)
+- [x] สร้าง `renderer/scripts/presentation-utils.js` เพื่อแยก Markdown ออกเป็นข้อมูลส่วน/สไลด์ที่ปรับมาตรฐานแล้ว
+- [x] รองรับหัวเรื่อง หัวเรื่องย่อย ย่อหน้า เครื่องหมายคำพูด รายการที่มีหมายเลข และรายการตรวจสอบ โดยรักษาข้อมูลเมตาของข้อความดิบ
+- [x] ติดตามข้อมูลเมตาทั่วโลก (ชื่อเรื่อง หัวเรื่องย่อย ผู้แต่ง อัปเดตล่าสุด) สำหรับส่วนหัวสไลด์และสรุปความคืบหน้า
+
+### ขั้นตอนที่ 2: สถาปัตยกรรมการเรนเดอร์งานนำเสนอ (เสร็จสมบูรณ์)
+- [x] แนะนำคลาส `PresentationAnimation` ใน `renderer/scripts/animation.js` พร้อมวงจรชีวิตการเริ่ม/หยุด การเล่นอัตโนมัติ และการนำทางด้วยแป้นพิมพ์
+- [x] สร้างโครงสร้าง DOM ของสไลด์ (ชื่อเรื่อง กำหนดการ ความคืบหน้า เนื้อหา) โดยใช้โมเดลแบบแยกวิเคราะห์
+- [x] ใช้ตัวช่วยการเรนเดอร์ที่นำมาใช้ซ้ำได้สำหรับรายการแบบบล็อก ย่อหน้า และเครื่องหมายคำพูด โดยหลีกเลี่ยงความเสี่ยงจากการแทรก InnerHTML
+
+### เฟส 3: การผสานรวม UI และโฟลว์เดสก์ท็อป (เสร็จสมบูรณ์)
+- [x] ขยาย `renderer/scripts/main.js` เพื่อแสดงตัวเลือกโหมดการนำเสนอ การ์ดแสดงตัวอย่าง และปุ่มสลับการตั้งค่า
+- [x] อัปเดต `renderer/index.html` และ `renderer/animation.html` เพื่อโฮสต์คอนเทนเนอร์ใหม่ โอเวอร์เลย์ และมาร์กอัปการนำทาง
+- [x] เชื่อมต่อ IPC/bridge เพื่อส่งข้อความ `main.js` ส่งข้อมูล Markdown ไปยังหน้าต่างแอนิเมชัน
+
+## เฟส 4: การปรับปรุงภาพและการเข้าถึง (กำลังดำเนินการ)
+> **อัปเดต (19 ตุลาคม 2568):**
+> - เพิ่มธีม CSS ที่ขยายได้ (`renderer/styles/animation.css`, `renderer/styles/main.css`) ซึ่งประกอบด้วยเค้าโครงการ์ด การจัดรูปแบบตารางงาน และ HUD การนำทาง
+> - ปรับแต่งระยะห่างและกฎการล้นเพื่อให้สไลด์อยู่ภายในขอบเขตของช่องมองภาพ แถบนำทางไม่บดบังเนื้อหาอีกต่อไป
+> ​​- เพิ่มฟังก์ชันการผ่านตัวชี้บนแคปซูลการนำทางและท่าทางคลิกเพื่อเลื่อนไปข้างหน้านอกตัวสไลด์
+> - บีบอัดข้อความหัวข้อย่อยยาวโดยอัตโนมัติในขณะที่ยังคงรักษาคำแนะนำเครื่องมือโฮเวอร์แบบเต็มไว้สำหรับผู้ตรวจสอบ
+
+#### แผนปฏิบัติการเค้าโครงเวทีแบบคงที่
+- [ ] กำหนดขนาดเวทีแบบมาตรฐาน (เช่น 1920×1080 พิกเซลเชิงตรรกะ ที่อัตราส่วน 16:9) และแสดงเนื้อหาสไลด์ทั้งหมดภายในเวทีนี้เท่านั้น
+- [ ] ห่อเวทีไว้ในช่องมองภาพที่ตอบสนองได้ ซึ่งปรับขนาดงานนำเสนอทั้งหมดผ่าน `transform: scale(...)` (หรือ CSS `zoom`) ตามพื้นที่ว่างของหน้าต่าง ในขณะที่ยังคงรักษาอัตราส่วนภาพไว้
+- [ ] คง HUD การนำทาง โอเวอร์เลย์ และเป้าหมายการคลิกไว้กับขอบเขตของเวที ลบสมมติฐานเค้าโครงที่อาศัยความสูง/ความกว้างของช่องมองภาพโดยตรง
+- [ ] เพิ่มการเติมพื้นที่และการปรับแต่งพื้นหลังที่ปลอดภัยรอบเวที เพื่อให้พื้นที่หน้าจอส่วนเกินแสดงกรอบตัวอักษร/เสา แทนที่จะเป็นองค์ประกอบ UI ที่ยืดออก
+- [ ] ตรวจสอบพฤติกรรมในความละเอียดทั่วไป (1280×720, 1920×1080, 3840×2160) และการปรับขนาดหน้าต่าง เพื่อให้แน่ใจว่าเนื้อหายังคงมองเห็นได้อย่างสมบูรณ์
+- [ ] อัปเดตแผนการถดถอยเพื่อรวมภาพสแน็ปช็อตที่ยืนยันว่าขอบเวทียังคงตรงกับกรอบการแสดงผล
+
+#### แผนการแยกแผงการตั้งค่า (การพิมพ์เทียบกับการนำเสนอ)
+- [ ] ตรวจสอบ `renderer/scripts/main.js` เพื่อแยกการ์ดการตั้งค่าที่ใช้ร่วมกันออกจากตัวเลือกสไตล์แอนิเมชัน เพื่อให้แต่ละโหมดควบคุมเฉพาะอินพุตของตัวเอง
+- [ ] สร้างกลุ่มการตั้งค่าการนำเสนอโดยเฉพาะ (การเล่นซ้ำอัตโนมัติ, ความเร็วการเล่นอัตโนมัติ, ความแรงของการสรุป) และแยกพารามิเตอร์การพิมพ์ (ความเร็วของอักขระ, ขนาดบล็อก, จำนวนบรรทัดต่อบล็อก)
+- [ ] ปรับปรุงการจัดการสถานะใหม่ เพื่อให้การสลับสไตล์สามารถสลับบานหน้าต่างการตั้งค่าได้โดยไม่ทำให้ค่าหรือป้ายกำกับรั่วไหลระหว่างโหมด
+- [ ] อัปเดตโครงสร้าง `renderer/index.html` และเลย์เอาต์ `renderer/styles/main.css` เพื่อแสดงบานหน้าต่างแบบเคียงข้างกัน โดยยังคงรักษาลำดับชั้นของภาพให้สอดคล้องกัน
+- [ ] ปรับแต่งข้อความ IPC/bridge เพื่อให้ส่งเฉพาะการกำหนดค่าของโหมดที่ใช้งานอยู่ไปยัง `renderer/scripts/animation.js` เท่านั้น
+- [ ] บันทึกสัญญาการตั้งค่าแต่ละโหมดใหม่ใน README และรายงานสถานะนี้เมื่อนำไปใช้งานจริง
+
+> **สถานะการตั้งค่า:** การตั้งค่าแบบแชร์ในปัจจุบันทำงานได้เสร็จสมบูรณ์ประมาณ **70%** — โหมดการพิมพ์ตอบสนองได้อย่างถูกต้อง ขณะที่ส่วนควบคุมเฉพาะการนำเสนอเชื่อมต่อได้เพียงบางส่วนเท่านั้น การดำเนินการตามแผนข้างต้นจะลบการเชื่อมต่อและทำให้การทำงานของฟีเจอร์ในอนาคตมีความเสถียร
+> **ผลลัพธ์ที่คาดหวัง:** UX ชัดเจนขึ้น (ไม่มีแถบเลื่อนแบบแชร์ที่ไม่ทำอะไรเลย) ลดข้อผิดพลาดระหว่างโหมดต่างๆ และเพิ่มตัวเลือกสำหรับการนำเสนอเพียงอย่างเดียวได้ง่ายขึ้น
+> **ความเสี่ยง:** จำเป็นต้องมีการปรับโครงสร้าง UI + IPC ร่วมกัน ซึ่งอาจเกิดการถดถอยหากการตั้งค่าเดิมขึ้นอยู่กับคีย์ที่ใช้ร่วมกัน บรรเทาปัญหาโดยการทดสอบแบบ Smoke-testing ทั้งสองโหมดและคงนามแฝงของคีย์เดิมไว้ในระหว่างการย้าย
+
+- [ ] ระบุสตริง UI (ภาษาไทย/อังกฤษ) สำหรับการควบคุมการนำเสนอ
+- [ ] กู้คืนการจัดตำแหน่งปุ่ม/พื้นที่การกด "เรียกดูไฟล์" เพื่อรับประกันความน่าเชื่อถือของกล่องโต้ตอบไฟล์หลังจากการเปลี่ยนแปลงเค้าโครง
+- [ ] คงเส้นทาง Markdown ที่เปิดล่าสุดไว้และจดจำรูปแบบแอนิเมชันที่ต้องการในทุกเซสชัน
+- [ ] ตรวจสอบขนาดเพย์โหลด Markdown และแสดงข้อผิดพลาดที่เข้าใจง่ายเมื่อการแยกวิเคราะห์ล้มเหลว
+
+#### สถานะการเสริมความแข็งแกร่งด้านความปลอดภัย (security-core.js)
+- **ขอบเขตปัจจุบัน:** สัญญาความปลอดภัยเดสก์ท็อปประมาณ 85% ใช้งานจริง (การข้ามเส้นทาง, ความลึกของลิงก์สัญลักษณ์, การตรวจสอบขนาดไฟล์, ความสมบูรณ์ของ SHA-256, การจำกัดอัตรา) สำหรับทั้งโฟลว์การพิมพ์และการนำเสนอ
+- [x] บังคับใช้การตรวจสอบการข้ามเส้นทาง, ความลึกของลิงก์สัญลักษณ์ และการตรวจสอบขนาดไฟล์ก่อนการเล่นการนำเสนอหรือการพิมพ์ (บล็อก Markdown ที่ไม่ถูกต้องทันที)
+- [x] รักษาการตรวจสอบความสมบูรณ์ของ SHA-256 และการวัดทางไกลแบบจำกัดอัตราในระหว่างการรับข้อมูล Markdown
+- [ ] ขยายบันทึกการตรวจสอบ `security-core` เพื่อบันทึกเหตุการณ์วงจรชีวิตโหมดการนำเสนอ (โหลด, ปฏิเสธ, เริ่ม/หยุดเล่นอัตโนมัติ) เพื่อการตรวจสอบย้อนกลับ
+- [ ] แสดงคำตัดสินของ security-core ภายในหน้าต่างการนำเสนอ (โทสต์แบบไม่บล็อก + ลิงก์ "ดูบันทึก" เมื่อไฟล์ถูกปฏิเสธ)
+- [ ] เพิ่มการครอบคลุม Jest อัตโนมัติสำหรับการตรวจสอบ Markdown (เส้นทางที่ถูกต้อง/ไม่ถูกต้อง ไฟล์ขนาดใหญ่เกินไป แฮชที่ถูกแก้ไข) และตรวจสอบให้แน่ใจว่าบล็อก CI ล้มเหลว
+- [ ] จัดทำเอกสารขั้นตอนความปลอดภัย (README + README.th) พร้อมแผนภาพขั้นตอนการทำงานที่แสดงวิธีที่โหมดการนำเสนอเรียกใช้ security-core
+- [ ] ประเมินการทำความสะอาดเพิ่มเติมสำหรับลิงก์/รูปภาพ Markdown แบบอินไลน์ก่อนการเรนเดอร์ ลบ URL ระยะไกลออกจนกว่าการทำความสะอาดจะถึงระดับที่เท่าเทียมกัน
+- [ ] กำหนดเกณฑ์การออกจากการเผยแพร่: โหมดการนำเสนอไม่สามารถส่งออกได้จนกว่ารายการข้างต้น 100% จะผ่านการตรวจสอบอัตโนมัติและ QA ด้วยตนเองบน Windows + macOS
+
+#### แผนการบรรจุภัณฑ์และการจัดจำหน่ายบนเดสก์ท็อป (MSI / EXE / npm)
+- [x] บำรุงรักษาการกำหนดค่า Electron Builder สำหรับ Windows builds (`npm run build:win`)
+- [x] ลบตัวเลือก `msi: true` ที่เลิกใช้แล้ว และตรวจสอบเอาต์พุต `.exe` (NSIS) ควบคู่ไปกับ `.exe` แบบพกพา
+- [x] เอกสารขั้นตอนการติดตั้ง (การทดสอบแบบ Smoke Test, การตั้งค่าครั้งแรก) ทั้งในไฟล์ README.md และ README.th.md
+- [x] ตั้งชื่ออาร์ทิแฟกต์แบบ build อัตโนมัติ เพื่อรวมเวอร์ชันโหมดการนำเสนอและคอมมิตแฮชเพื่อการตรวจสอบย้อนกลับ
+- [x] สร้างโฟลเดอร์ `workspace/` ว่างในแอปแพ็กเกจสำหรับการวัดและส่งข้อมูลผู้ใช้เมื่อเปิดใช้งานครั้งแรก
+- [x] เตรียมช่องทางการเผยแพร่ npm: ตัดทอนเพย์โหลดของแพ็กเกจ กำหนดรายการ `bin` สำหรับตัวเรียกใช้งานเดสก์ท็อป และเกตการเผยแพร่หลัง CI
+- [x] เผยแพร่ npm เบต้า ตรวจสอบเวิร์กโฟลว์ `npx @chahuadev/code-animator --presentation` และบันทึกคำสั่งติดตั้งในไฟล์ README ทั้งสองไฟล์
+- [x] บันทึกเมตริกการติดตั้ง npm (จำนวนการดาวน์โหลด อัตราความล้มเหลว) และบันทึกควบคู่ไปกับการวัดและส่งข้อมูล MSI ในแต่ละเวอร์ชัน
+- [x] กำหนดเกตการเผยแพร่: ไม่มีการเผยแพร่ MSI/EXE/npm จนกว่างานโหมดการนำเสนอ + ความปลอดภัยจะเสร็จสมบูรณ์ 100%
+
+> **อัปเดตแพ็กเกจล่าสุด:** `package.json` จะแทรก `COMMIT_HASH` ในระหว่าง `npm run build:win` ซึ่งเปิดใช้งานชื่ออาร์ทิแฟกต์ที่ติดแท็ก commit ตัวสร้าง NSIS จะส่งเอาต์พุต `.exe` (ตัวติดตั้ง) และเอาต์พุต `.exe` แบบพกพา CLI (`@chahuadev/code-animator`) มาพร้อมกับ npm พร้อมการรองรับ `npx` เมตริกการสร้างจะอยู่ใน `workspace/telemetry/installer-metrics.json` และการวัดระยะไกลที่รันครั้งแรกจะบันทึกช่องเปิดเดสก์ท็อปเทียบกับ npm โดยอัตโนมัติ โฟลเดอร์ `workspace/` ถูกสร้างขึ้นล่วงหน้าในระหว่างการเริ่มต้นแอปพลิเคชัน เพื่อให้มั่นใจว่าการจัดเก็บไฟล์ของผู้ใช้และการรวบรวมการวัดระยะไกลทำงานได้อย่างน่าเชื่อถือ
+
+### เฟส 6: คุณสมบัติการนำเสนอขั้นสูง (ยังไม่ได้เริ่มต้น)
+- [ ] แนะนำการเขียนสคริปต์ไทม์ไลน์ (ตัวจับเวลาเลื่อนสไลด์อัตโนมัติ, การซ้อนทับบันทึกของผู้บรรยาย)
+- [ ] เพิ่มตัวเลือกการส่งออก (การบันทึก PDF, ชุด HTML แบบคงที่)
+- [ ] รองรับบล็อกสื่อแบบฝัง (รูปภาพ, ไฮไลต์โค้ด) เมื่อขั้นตอนสรุปเสร็จสมบูรณ์
+
+---
+
+## 3. การลงทะเบียนโมดูลและสถานะ
+ตารางด้านล่างเน้นไฟล์สำคัญที่เปิดใช้งานโหมดการนำเสนอ
+
+### ตรรกะหลักของตัวแสดงผล
+- [x] `renderer/scripts/animation.js` — โฮสต์ `PresentationAnimation`; จัดการวงจรชีวิตของสไลด์ การนำทาง คำแนะนำเครื่องมือ และการเล่นอัตโนมัติ
+- [x] `renderer/scripts/presentation-utils.js` — แยกวิเคราะห์ Markdown และบีบอัดเนื้อหาเพื่อการใช้งานสไลด์
+- [x] `renderer/scripts/main.js` — การตั้งค่าพื้นผิว, การแสดงตัวอย่าง, การเชื่อมต่อ IPC สำหรับโหมดการนำเสนอ
 
 ### HTML Shells
-- [x] `renderer/index.html` — Includes style selector, Markdown preview card, and mode toggles.
-- [x] `renderer/animation.html` — Houses animation canvas, info overlay, and presentation container.
+- [x] `renderer/index.html` — ประกอบด้วยตัวเลือกสไตล์, การ์ดแสดงตัวอย่าง Markdown และปุ่มสลับโหมด
+- [x] `renderer/animation.html` — แคนวาสแอนิเมชันบ้าน โอเวอร์เลย์ข้อมูล และคอนเทนเนอร์การนำเสนอ
 
-### Styling Assets
-- [x] `renderer/styles/main.css` — Adds presentation preview tile, buttons, and layout adjustments.
-- [x] `renderer/styles/animation.css` — Defines slide cards, typography, navigation HUD, tooltips, and scroll behaviour.
+### ทรัพยากรการจัดรูปแบบ
+- [x] `renderer/styles/main.css` — เพิ่มไทล์ตัวอย่างงานนำเสนอ ปุ่ม และการปรับแต่งเค้าโครง
+- [x] `renderer/styles/animation.css` — กำหนดการ์ดสไลด์ ตัวอักษร HUD การนำทาง คำแนะนำเครื่องมือ และพฤติกรรมการเลื่อน
 
-### Diagnostics & Tooling
-- [x] `workspace/inspect-slides.cjs` — CLI helper to inspect generated slide models for QA without launching Electron.
-- [x] `workspace/collect-release-metrics.js` — Post-build script that logs installer sizes, commit hash, and platform metadata into `workspace/telemetry/installer-metrics.json`.
+### การวินิจฉัยและเครื่องมือ
+- [x] `workspace/inspect-slides.cjs` — ตัวช่วย CLI เพื่อตรวจสอบโมเดลสไลด์ที่สร้างขึ้นสำหรับ QA โดยไม่ต้องเปิดใช้งาน Electron
+- [x] `workspace/collect-release-metrics.js` — สคริปต์หลังการสร้างที่บันทึกขนาดของตัวติดตั้ง คอมมิตแฮช และข้อมูลเมตาของแพลตฟอร์มลงใน `workspace/telemetry/installer-metrics.json`
 
-### Distribution Utilities
-- [x] `cli.js` — npm CLI entry that launches the Electron app (`chahua-code-animator --presentation`) and tags telemetry as `npm-cli` for first-run tracking.
+### ยูทิลิตี้การแจกจ่าย
+- [x] `cli.js` — รายการ npm CLI ที่เรียกใช้แอป Electron (`chahua-code-animator --presentation`) และแท็ก telemetry เป็น `npm-cli` สำหรับการติดตามการทำงานครั้งแรก
 
-### Pending or Planned
-- [ ] `renderer/styles/themes/presentation-light.css` *(planned)* — Dedicated light theme skin.
-- [ ] `renderer/scripts/presentation-notes.js` *(planned)* — Speaker notes overlay and timeline scripting helpers.
-
----
-
-## 4. Formal TODO Register
-### Immediate Actions (Week 42, 2025)
-- [ ] Fix "Browse Files" click target regression and retest file dialog invocation on Windows.
-- [ ] Add UI switch to choose between full Markdown text and condensed summaries per slide.
-- [ ] Provide keyboard shortcut legend (overlay or tooltip) for presentation controls.
-
-### Near-Term Enhancements
-- [ ] Offer Markdown lint feedback when unsupported constructs are encountered (tables, inline images).
-- [ ] Cache parsed slide data to speed up repeated renders of the same file.
-- [ ] Allow per-section colour accents configurable via front-matter in the Markdown source.
-
-### Supporting Activities
-- [ ] Document presentation JSON schema for future integration with other authoring tools.
-- [ ] Add Jest/Playwright coverage for slide generation and navigation UX.
-- [ ] Record demo videos/gifs for README usage instructions once UX stabilises.
+### รอดำเนินการหรือวางแผนไว้
+- [ ] `renderer/styles/themes/presentation-light.css` *(วางแผนไว้)* — สกินธีมสีอ่อนเฉพาะ
+- [ ] `renderer/scripts/presentation-notes.js` *(วางแผนไว้)* — ตัวช่วยสคริปต์โอเวอร์เลย์บันทึกของผู้บรรยายและไทม์ไลน์
 
 ---
 
-## 5. Known Issues & Blockers
-- **UI-2025-10-19-01 — Browse Files Misalignment:** Button hit-area shifted after layout refactor; users report inconsistent dialog activation. Requires DOM + CSS audit.
-- **UX-2025-10-19-02 — Text Condensation Limits:** Automatic summariser truncates some technical bullets aggressively; need user-facing controls for full text toggle.
-- **A11y-2025-10-19-03 — Keyboard Discovery:** No onscreen hints for navigation shortcuts; impacts first-time presenters.
+## 4. การลงทะเบียน TODO อย่างเป็นทางการ
+### การดำเนินการทันที (สัปดาห์ที่ 42, 2025)
+- [ ] แก้ไขการถดถอยของเป้าหมายการคลิก "เรียกดูไฟล์" และทดสอบการเรียกใช้กล่องโต้ตอบไฟล์อีกครั้งบน Windows
+- [ ] เพิ่มสวิตช์ UI เพื่อเลือกระหว่างข้อความ Markdown แบบเต็มและบทสรุปย่อต่อสไลด์
+- [ ] ระบุคำอธิบายแป้นพิมพ์ลัด (ภาพซ้อนทับหรือคำแนะนำเครื่องมือ) สำหรับการควบคุมการนำเสนอ
+
+### การปรับปรุงในระยะใกล้
+- [ ] นำเสนอข้อเสนอแนะเกี่ยวกับ Markdown lint เมื่อพบโครงสร้างที่ไม่รองรับ (ตาราง รูปภาพแบบอินไลน์)
+- [ ] แคชข้อมูลสไลด์ที่วิเคราะห์แล้วเพื่อเร่งความเร็วในการเรนเดอร์ไฟล์เดียวกันซ้ำๆ
+- [ ] อนุญาตให้กำหนดค่าการเน้นสีสำหรับแต่ละส่วนได้ผ่าน front-matter ในซอร์ส Markdown
+
+### กิจกรรมสนับสนุน
+- [ ] จัดทำเอกสาร JSON schema สำหรับการผสานรวมกับเครื่องมือสร้างอื่นๆ ในอนาคต
+- [ ] เพิ่ม Jest/Playwright สำหรับการสร้างสไลด์และการนำทาง UX
+- [ ] บันทึกวิดีโอสาธิต/gif สำหรับคำแนะนำการใช้งาน README เมื่อ UX มีเสถียรภาพ
 
 ---
 
-## 6. Risks & Mitigations
-- **Markdown Variance:** Unexpected Markdown constructs may render poorly. Mitigate with validation warnings and graceful fallbacks.
-- **Layout Drift:** Future CSS tweaks risk breaking hit-areas again. Introduce regression tests (Playwright) and design tokens to stabilise dimensions.
-- **Performance:** Large Markdown files could produce dozens of slides; monitor render time and implement virtualised navigation if needed.
+## 5. ปัญหาที่ทราบและอุปสรรค
+- **UI-2025-10-19-01 — การจัดวางไฟล์ไม่ถูกต้อง:** พื้นที่การกดปุ่มถูกเลื่อนหลังจากการปรับโครงสร้างเค้าโครงใหม่ ผู้ใช้รายงานว่าการเปิดใช้งานกล่องโต้ตอบไม่สอดคล้องกัน จำเป็นต้องมีการตรวจสอบ DOM + CSS
+- **UX-2025-10-19-02 — ข้อจำกัดการย่อข้อความ:** ตัวสรุปอัตโนมัติตัดทอนหัวข้อย่อยทางเทคนิคบางรายการอย่างรุนแรง จำเป็นต้องมีการควบคุมที่ผู้ใช้เห็นสำหรับการสลับข้อความแบบเต็ม
+- **A11y-2025-10-19-03 — การค้นหาแป้นพิมพ์:** ไม่มีคำแนะนำบนหน้าจอสำหรับทางลัดการนำทาง ส่งผลกระทบต่อผู้นำเสนอครั้งแรก
 
 ---
 
-## 7. Appendix — Key Artifacts
+## 6. ความเสี่ยงและการบรรเทา
+- **ความแปรปรวนของมาร์กดาวน์:** โครงสร้างมาร์กดาวน์ที่ไม่คาดคิดอาจแสดงผลได้ไม่ดี บรรเทาด้วยคำเตือนการตรวจสอบความถูกต้องและการสำรองข้อมูลอย่างเหมาะสม
+- **Layout Drift:** การปรับแต่ง CSS ในอนาคตอาจทำให้ hit-area เสียหายอีกครั้ง ขอแนะนำการทดสอบการถดถอย (Playwright) และโทเค็นการออกแบบเพื่อรักษามิติให้คงที่
+- **ประสิทธิภาพ:** ไฟล์ Markdown ขนาดใหญ่สามารถสร้างสไลด์ได้หลายสิบสไลด์ ตรวจสอบเวลาการเรนเดอร์และนำระบบนำทางเสมือนจริงมาใช้หากจำเป็น
+
+---
+
+## 7. ภาคผนวก — ส่วนประกอบสำคัญ
 - `renderer/scripts/animation.js`
 - `renderer/scripts/presentation-utils.js`
 - `renderer/scripts/main.js`
@@ -167,98 +167,27 @@ The table below highlights key files that enable Presentation Mode.
 - `renderer/index.html`
 - `workspace/inspect-slides.cjs`
 
-> **Latest Status:** Presentation mode now ships with condensed slide summaries, tooltips for full text, and a refined navigation HUD. Browse File reliability and theming remain the top follow-up tasks.
+> **สถานะล่าสุด:** โหมดการนำเสนอมาพร้อมกับบทสรุปสไลด์แบบย่อ คำแนะนำเครื่องมือสำหรับข้อความเต็ม และ HUD การนำทางที่ปรับปรุงใหม่ ความน่าเชื่อถือของไฟล์เรียกดูและธีมยังคงเป็นงานติดตามผลหลัก
 
 ---
 
-## 8. User Guide — English (EN)
-
-### Installation & Setup
-
-**From npm (recommended for end users):**
-```bash
-npm install -g @chahuadev/code-animator
-chahua-code-animator --presentation
-```
-
-**From Windows installer:**
-1. Download `.exe` from GitHub releases
-2. Run the installer and complete the setup wizard
-3. Launch from Start menu or desktop shortcut
-4. The app auto-creates `workspace/` folder for storing presentations
-
-**Development setup:**
-```bash
-git clone https://github.com/chahuadev/chahua-code-animator
-cd chahua-code-animator
-npm install
-npm start
-```
-
-### Loading a Presentation
-
-1. In the main window, click **Browse Files** to select a Markdown file
-2. Choose **Presentation mode** (default) or **Typing mode**
-3. (Optional) Adjust settings:
-   - **Auto-loop:** Replay presentation when it reaches the last slide
-   - **Autoplay speed:** Controls how fast text is condensed and slides advance
-   - **Summarisation strength:** Controls how aggressively bullet points are shortened
-4. Click **Play Animation** to launch the presentation window
-
-### Navigation & Controls
-
-| Action | Keyboard | Mouse |
-| --- | --- | --- |
-| Next slide | <kbd>Space</kbd> or <kbd>→</kbd> | Click navigation bubble |
-| Previous slide | <kbd>←</kbd> or <kbd>Backspace</kbd> | Click left arrow |
-| Show help | <kbd>H</kbd> | Hover over info icon |
-| Reset | <kbd>R</kbd> | — |
-| Exit | <kbd>Esc</kbd> | Click ✕ button |
-
-### Customization
-
-**Markdown file requirements:**
-- Standard `.md` format with headings, paragraphs, bullet lists, and checkboxes
-- Metadata (optional): `# Title`, author line, date line at the top
-- Supported blocks: `# H1`, `## H2`, `- bullet`, `- [ ] checklist`, `> quote`, `1. numbered list`
-
-**Tips:**
-- Use short bullet points for best condensation
-- Checkboxes are automatically converted to progress indicators
-- Quotes appear highlighted in slides
-- Very long lines are wrapped automatically
-
-### Keyboard Shortcuts Summary
-
-| Mode | Shortcut | Function |
-| --- | --- | --- |
-| Both | <kbd>Esc</kbd> | Close playback |
-| Both | <kbd>R</kbd> | Reset |
-| Presentation | <kbd>Space</kbd> / <kbd>→</kbd> | Next slide |
-| Presentation | <kbd>←</kbd> / <kbd>Backspace</kbd> | Previous slide |
-| Presentation | <kbd>H</kbd> | Help overlay |
-| Typing | <kbd>Space</kbd> | Play/pause |
-| Typing | <kbd>→</kbd> / <kbd>←</kbd> | Scroll by block |
-
----
-
-## 9. User Guide — Thai (ไทย)
+# 8. คู่มือผู้ใช้ — ภาษาไทย (TH)
 
 ### การติดตั้งและตั้งค่า
 
-**จากแอป npm (แนะนำสำหรับผู้ใช้ทั่วไป):**
+**จาก npm (แนะนำสำหรับผู้ใช้ทั่วไป):**
 ```bash
 npm install -g @chahuadev/code-animator
 chahua-code-animator --presentation
 ```
 
 **จากตัวติดตั้ง Windows:**
-1. ดาวน์โหลด `.exe` จาก GitHub releases
-2. รันตัวติดตั้งและสำเร็จการตั้งค่า
-3. เปิดจากเมนู Start หรือไอคอนบนเดสก์ท็อป
-4. แอปจะสร้างโฟลเดอร์ `workspace/` โดยอัตโนมัติ
+1. ดาวน์โหลด `.exe` จาก GitHub รุ่นต่างๆ
+2. เรียกใช้ตัวติดตั้งและทำตามขั้นตอนในตัวช่วยสร้างการติดตั้งให้เสร็จสมบูรณ์
+3. เรียกใช้งานจากเมนู Start หรือทางลัดบนเดสก์ท็อป
+4. แอปจะสร้างโฟลเดอร์ `workspace/` โดยอัตโนมัติสำหรับจัดเก็บงานนำเสนอ
 
-**ตั้งค่าพัฒนา:**
+**การตั้งค่าการพัฒนา:**
 ```bash
 git clone https://github.com/chahuadev/chahua-code-animator
 cd chahua-code-animator
@@ -266,49 +195,49 @@ npm install
 npm start
 ```
 
-### การโหลด Presentation
+### การโหลดงานนำเสนอ
 
-1. ในหน้าต่างหลัก คลิก **Browse Files** เพื่อเลือกไฟล์ Markdown
-2. เลือก **Presentation mode** (เริ่มต้น) หรือ **Typing mode**
-3. (ตัวเลือก) ปรับการตั้งค่า:
-   - **Auto-loop:** เล่นซ้ำเมื่อสไลด์สุดท้ายหมด
-   - **Autoplay speed:** ความเร็วของการย่อข้อความและการเลื่อนสไลด์
-   - **Summarisation strength:** ระดับการย่อเนื้อหาในลูกศร
-4. คลิก **Play Animation** เพื่อเปิดหน้าต่าง Presentation
+1. ในหน้าต่างหลัก คลิก **เรียกดูไฟล์** เพื่อเลือกไฟล์ Markdown
+2. เลือก **โหมดการนำเสนอ** (ค่าเริ่มต้น) หรือ **โหมดการพิมพ์**
+3. (ไม่บังคับ) ปรับการตั้งค่า:
+- **เล่นซ้ำอัตโนมัติ:** เล่นงานนำเสนอซ้ำเมื่อถึงสไลด์สุดท้าย
+- **ความเร็วในการเล่นอัตโนมัติ:** ควบคุมความเร็วในการย่อข้อความและการเลื่อนสไลด์
+- **ความแรงของการสรุป:** ควบคุมความรุนแรงของการย่อจุดหัวข้อย่อย
+4. คลิก **เล่นแอนิเมชัน** เพื่อเปิดหน้าต่างงานนำเสนอ
 
-### การนำทางและควบคุม
+### การนำทางและการควบคุม
 
-| การกระทำ | คีย์บอร์ด | เมาส์ |
+| การดำเนินการ | แป้นพิมพ์ | เมาส์ |
 | --- | --- | --- |
-| สไลด์ถัดไป | <kbd>Space</kbd> หรือ <kbd>→</kbd> | คลิกบับเบิล |
-| สไลด์ก่อนหน้า | <kbd>←</kbd> หรือ <kbd>Backspace</kbd> | คลิกลูกศรซ้าย |
-| แสดงความช่วยเหลือ | <kbd>H</kbd> | ชี้ไปที่ไอคอน info |
-| รีเซต | <kbd>R</kbd> | — |
-| ปิด | <kbd>Esc</kbd> | คลิกปุ่ม ✕ |
+| สไลด์ถัดไป | <kbd>Space</kbd> หรือ <kbd></kbd> | คลิกฟองการนำทาง |
+| สไลด์ก่อนหน้า | <kbd></kbd> หรือ <kbd>Backspace</kbd> | คลิกลูกศรซ้าย |
+| แสดงวิธีใช้ | <kbd>H</kbd> | เลื่อนเมาส์ไปวางเหนือไอคอนข้อมูล |
+| รีเซ็ต | <kbd>R</kbd> | — |
+| ออก | <kbd>Esc</kbd> | ปุ่มคลิก |
 
 ### การปรับแต่ง
 
-**ความต้องการของไฟล์ Markdown:**
-- รูปแบบ `.md` มาตรฐานพร้อมหัวข้อ ย่อหน้า ลูกศร และเช็กบ็อกซ์
-- ข้อมูลเมตา (ตัวเลือก): `# ชื่อเรื่อง`, บรรทัดผู้เขียน, วันที่ที่ด้านบน
-- บล็อกที่รองรับ: `# H1`, `## H2`, `- bullet`, `- [ ] checklist`, `> quote`, `1. numbered list`
+**ข้อกำหนดไฟล์ Markdown:**
+- รูปแบบมาตรฐาน `.md` พร้อมหัวเรื่อง ย่อหน้า รายการหัวข้อย่อย และช่องทำเครื่องหมาย
+- เมตาดาต้า (ไม่บังคับ): `# Title`, บรรทัดผู้เขียน, บรรทัดวันที่ด้านบน
+- บล็อกที่รองรับ: `# H1`, `## H2`, `- bullet`, `- [ ] checklist`, `> quote`, `1. รายการลำดับเลข`
 
 **เคล็ดลับ:**
-- ใช้ลูกศรสั้น ๆ เพื่อให้ได้ผลการย่อที่ดี
-- เช็กบ็อกซ์ถูกแปลงเป็นตัวบ่งชี้ความคืบหน้าโดยอัตโนมัติ
-- ข้อความยกมาปรากฏเป็นไฮไลท์ในสไลด์
-- บรรทัดที่ยาวมากจะห่อโดยอัตโนมัติ
+- ใช้สัญลักษณ์หัวข้อย่อยสั้นๆ เพื่อการย่อหน้าที่ดีที่สุด
+- ช่องทำเครื่องหมายจะถูกแปลงเป็นตัวบ่งชี้ความคืบหน้าโดยอัตโนมัติ
+- เครื่องหมายคำพูดจะปรากฏเป็นไฮไลต์ในสไลด์
+- บรรทัดยาวมากจะถูกตัดโดยอัตโนมัติ
 
-### สรุปปุ่มลัดคีย์บอร์ด
+### สรุปแป้นพิมพ์ลัด
 
-| โหมด | ปุ่มลัด | ฟังก์ชัน |
+| โหมด | ทางลัด | ฟังก์ชัน |
 | --- | --- | --- |
 | ทั้งสอง | <kbd>Esc</kbd> | ปิดการเล่น |
-| ทั้งสอง | <kbd>R</kbd> | รีเซต |
-| Presentation | <kbd>Space</kbd> / <kbd>→</kbd> | สไลด์ถัดไป |
-| Presentation | <kbd>←</kbd> / <kbd>Backspace</kbd> | สไลด์ก่อนหน้า |
-| Presentation | <kbd>H</kbd> | ความช่วยเหลือ |
-| Typing | <kbd>Space</kbd> | เล่น/หยุด |
-| Typing | <kbd>→</kbd> / <kbd>←</kbd> | เลื่อนตามบล็อก |
+| ทั้งสอง | <kbd>R</kbd> | รีเซ็ต |
+| การนำเสนอ | <kbd>Space</kbd> / <kbd></kbd> | สไลด์ถัดไป |
+| การนำเสนอ | <kbd></kbd> / <kbd>Backspace</kbd> | สไลด์ก่อนหน้า |
+| การนำเสนอ | <kbd>H</kbd> | ซ้อนความช่วยเหลือ |
+| การพิมพ์ | <kbd>Space</kbd> | เล่น/หยุดชั่วคราว |
+| การพิมพ์ | <kbd></kbd> / <kbd></kbd> | เลื่อนตามบล็อก |
 
-```
+---

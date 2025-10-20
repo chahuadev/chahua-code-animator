@@ -12,7 +12,7 @@ Chahua Code Animator converts status updates written in Markdown into polished s
 ## Why teams use it
 
 - **Two clear animation paths**
-  - *Presentation:* Markdown → structured slides (title, agenda, progress, content blocks) with navigation HUD.
+  - *Presentation:* Markdown  structured slides (title, agenda, progress, content blocks) with navigation HUD.
   - *Typing:* Character-by-character playback of source files with adjustable block size and speed.
 - **Security-first ingestion** courtesy of `security-core.js` (path traversal guard, whitelist validation, symlink protection, rate limiting).
 - **Actionable telemetry** – 40-slide benchmark deck renders in ~1.2s and now includes automatic text condensation. Settings coverage is ~70% for Presentation (tracked in the plan below).
@@ -66,8 +66,8 @@ Once inside the playback window:
 
 | Key | Action |
 | --- | --- |
-| <kbd>Space</kbd> or <kbd>→</kbd> | Next slide |
-| <kbd>←</kbd> or <kbd>Backspace</kbd> | Previous slide |
+| <kbd>Space</kbd> or <kbd></kbd> | Next slide |
+| <kbd></kbd> or <kbd>Backspace</kbd> | Previous slide |
 | <kbd>H</kbd> | Toggle info/help overlay |
 | <kbd>R</kbd> | Reset to first slide |
 | <kbd>Esc</kbd> | Close playback window |
@@ -77,8 +77,8 @@ Once inside the playback window:
 | Key | Action |
 | --- | --- |
 | <kbd>Space</kbd> | Play/pause animation |
-| <kbd>→</kbd> | Scroll down block by block |
-| <kbd>←</kbd> | Scroll up block by block |
+| <kbd></kbd> | Scroll down block by block |
+| <kbd></kbd> | Scroll up block by block |
 | <kbd>R</kbd> | Reset animation |
 | <kbd>Esc</kbd> | Close playback window |
 
@@ -123,13 +123,13 @@ npm run build:win
 
 **Release checklist:**
 
-1. ✅ Confirm all installer formats are generated (NSIS, Portable, MSI for x64)
-2. ✅ Inspect installer UIs (icons, product names, versions)
-3. ✅ Smoke test: install/uninstall/run on clean Windows VM
-4. ✅ Verify NSIS creates Start Menu shortcuts and desktop shortcuts
-5. ✅ Verify MSI integrates with Windows Add/Remove Programs
-6. ✅ (Optional) Sign artifacts with `signtool` and re-test
-7. ✅ Record metrics in `workspace/telemetry/installer-metrics.json`
+1.  Confirm all installer formats are generated (NSIS, Portable, MSI for x64)
+2.  Inspect installer UIs (icons, product names, versions)
+3.  Smoke test: install/uninstall/run on clean Windows VM
+4.  Verify NSIS creates Start Menu shortcuts and desktop shortcuts
+5.  Verify MSI integrates with Windows Add/Remove Programs
+6.  (Optional) Sign artifacts with `signtool` and re-test
+7.  Record metrics in `workspace/telemetry/installer-metrics.json`
 
 > **Note:** The `workspace/` folder is created automatically on first app launch. Ensure it exists in the installation directory for telemetry and user data storage.
 
@@ -137,7 +137,7 @@ npm run build:win
 
 ## Core files
 
-- `renderer/scripts/presentation-utils.js` – Markdown ➜ slide model builder.
+- `renderer/scripts/presentation-utils.js` – Markdown  slide model builder.
 - `renderer/scripts/animation.js` – Hosts `PresentationAnimation` and Typing engine.
 - `renderer/scripts/main.js` – UI selector, settings sync, IPC bridge.
 - `renderer/styles/animation.css` / `renderer/styles/main.css` – Presentation layout and control styling.
@@ -172,9 +172,11 @@ Licensed under the MIT License. See [LICENSE](LICENSE).
 - [Contributing Guide](docs/en/CONTRIBUTING.md)
 - [Security Policy](docs/en/SECURITY_POLICY.md)
 - [Support Guidelines](docs/en/SUPPORT.md)
+- [PRESENTATION](docs/en/PRESENTATION_MODE_STATUS.md)
 
 **Thai (ไทย):**
 - [Code of Conduct](docs/th/CODE_OF_CONDUCT.md)
 - [Contributing Guide](docs/th/CONTRIBUTING.md)
 - [Security Policy](docs/th/SECURITY_POLICY.md)
 - [Support Guidelines](docs/th/SUPPORT.md)
+- [PRESENTATION](docs/th/PRESENTATION_MODE_STATUS.md)

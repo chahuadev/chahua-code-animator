@@ -23,9 +23,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Initialize security manager
+// If a packaged workspace (dist\workspace) exists (e.g., during local packing), allow it explicitly
+const extraAllowed = [];
+try {
+    const packagedWorkspace = path.join(__dirname, 'dist', 'workspace');
+    if (fs.existsSync(packagedWorkspace)) {
+        extraAllowed.push(packagedWorkspace);
+    }
+} catch (e) {
+    // ignore
+}
+
 const securityManager = new SecurityManager({
     ALLOW_SYMLINKS: false,
-    VERIFY_FILE_INTEGRITY: true
+    VERIFY_FILE_INTEGRITY: true,
+    EXTRA_ALLOWED_DIRS: extraAllowed
 });
 
 let mainWindow;
@@ -36,15 +48,40 @@ let userWorkspace;
 
 function ensureUserWorkspace() {
     try {
-        const userDataDir = app.getPath && app.getPath('userData') ? app.getPath('userData') : path.join(__dirname, 'user_data');
-        userWorkspace = path.join(userDataDir, 'workspace');
+        // Prefer workspace located next to the installed program files under LocalAppData\Programs
+        // This matches installer behavior which creates: %LocalAppData%\Programs\Chahua Code Animator\workspace
+        const localAppData = app.getPath && app.getPath('home') ? app.getPath('home') : null;
+        // On Windows, installed program folder is typically under %LocalAppData%\Programs\<ProductName>
+        const programInstallPath = process.platform === 'win32'
+            ? path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Chahua Code Animator')
+            : null;
+
+        const installedWorkspace = programInstallPath ? path.join(programInstallPath, 'workspace') : null;
+
+        if (installedWorkspace && fs.existsSync(installedWorkspace)) {
+            userWorkspace = installedWorkspace;
+        } else {
+            const userDataDir = app.getPath && app.getPath('userData') ? app.getPath('userData') : path.join(__dirname, 'user_data');
+            userWorkspace = path.join(userDataDir, 'workspace');
+        }
         if (!fs.existsSync(userWorkspace)) {
             fs.mkdirSync(userWorkspace, { recursive: true });
         }
-        // ensure placeholder exists
-        const keep = path.join(userWorkspace, '.keep');
-        if (!fs.existsSync(keep)) {
-            fs.writeFileSync(keep, '');
+        // ensure placeholder exists (only create when writable)
+        try {
+            if (!fs.existsSync(userWorkspace)) {
+                fs.mkdirSync(userWorkspace, { recursive: true });
+            }
+            const keep = path.join(userWorkspace, '.keep');
+            if (!fs.existsSync(keep)) {
+                fs.writeFileSync(keep, '');
+            }
+        } catch (e) {
+            // If installed workspace is not writable (program files area), fall back to packaged workspace
+            if (fs.existsSync(userWorkspace) === false) {
+                userWorkspace = path.join(__dirname, 'workspace');
+                try { fs.mkdirSync(userWorkspace, { recursive: true }); } catch (er) {}
+            }
         }
     } catch (err) {
         console.warn('[Workspace] Could not ensure user workspace:', err.message);

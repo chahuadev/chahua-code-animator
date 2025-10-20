@@ -209,11 +209,11 @@ npm start
 
 | Action | Keyboard | Mouse |
 | --- | --- | --- |
-| Next slide | <kbd>Space</kbd> or <kbd>→</kbd> | Click navigation bubble |
-| Previous slide | <kbd>←</kbd> or <kbd>Backspace</kbd> | Click left arrow |
+| Next slide | <kbd>Space</kbd> or <kbd></kbd> | Click navigation bubble |
+| Previous slide | <kbd></kbd> or <kbd>Backspace</kbd> | Click left arrow |
 | Show help | <kbd>H</kbd> | Hover over info icon |
 | Reset | <kbd>R</kbd> | — |
-| Exit | <kbd>Esc</kbd> | Click ✕ button |
+| Exit | <kbd>Esc</kbd> | Click  button |
 
 ### Customization
 
@@ -234,11 +234,11 @@ npm start
 | --- | --- | --- |
 | Both | <kbd>Esc</kbd> | Close playback |
 | Both | <kbd>R</kbd> | Reset |
-| Presentation | <kbd>Space</kbd> / <kbd>→</kbd> | Next slide |
-| Presentation | <kbd>←</kbd> / <kbd>Backspace</kbd> | Previous slide |
+| Presentation | <kbd>Space</kbd> / <kbd></kbd> | Next slide |
+| Presentation | <kbd></kbd> / <kbd>Backspace</kbd> | Previous slide |
 | Presentation | <kbd>H</kbd> | Help overlay |
 | Typing | <kbd>Space</kbd> | Play/pause |
-| Typing | <kbd>→</kbd> / <kbd>←</kbd> | Scroll by block |
+| Typing | <kbd></kbd> / <kbd></kbd> | Scroll by block |
 
 ---
 

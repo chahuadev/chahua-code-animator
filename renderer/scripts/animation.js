@@ -31,10 +31,10 @@ function setScrollable(enabled) {
 
 function escapeHtml(source) {
     return source
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
+        .replace(/&/g, '')
+        .replace(/</g, '')
+        .replace(/>/g, '')
+        .replace(/"/g, '')
         .replace(/'/g, '&#39;');
 }
 
@@ -507,7 +507,7 @@ class TypingAnimation {
             const currentIndex = Math.max(lines.length - 1, 0);
             const htmlLines = lines.map((line, index) => {
                 const content = useHighlight ? highlightCodeSnippet(line) : escapeHtml(line);
-                const safeContent = content === '' ? '&nbsp;' : content;
+                const safeContent = content === '' ? '' : content;
                 const lineClass = emphasizeLine && index === currentIndex ? 'code-line current-line' : 'code-line';
                 return `<span class="${lineClass}">${safeContent}</span>`;
             });
@@ -949,12 +949,12 @@ class PresentationAnimation {
         this.prevBtn = document.createElement('button');
         this.prevBtn.className = 'nav-btn prev';
         this.prevBtn.setAttribute('aria-label', 'Previous slide');
-        this.prevBtn.innerHTML = '<span>&lsaquo;</span>';
+        this.prevBtn.innerHTML = '<span></span>';
 
         this.nextBtn = document.createElement('button');
         this.nextBtn.className = 'nav-btn next';
         this.nextBtn.setAttribute('aria-label', 'Next slide');
-        this.nextBtn.innerHTML = '<span>&rsaquo;</span>';
+        this.nextBtn.innerHTML = '<span></span>';
 
         const info = document.createElement('div');
         info.className = 'nav-info';

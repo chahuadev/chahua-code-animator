@@ -99,6 +99,8 @@ const SECURITY_CONFIG = {
         /node_modules/,
         /\.git/
     ],
+    // Additional allowed directories (absolute paths). Empty by default.
+    EXTRA_ALLOWED_DIRS: [],
     
     // File Security
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
@@ -201,15 +203,31 @@ class SecurityManager {
             }
         }
 
-        // Allow files within working directory OR workspace folder
+        // Allow files within working directory OR workspace folder OR any EXTRA_ALLOWED_DIRS
         const absolutePath = path.resolve(targetPath);
         const workingDir = process.cwd();
         const workspaceDir = path.join(workingDir, 'workspace');
-        
+
         const isInWorkingDir = absolutePath.startsWith(workingDir);
         const isInWorkspace = absolutePath.startsWith(workspaceDir);
-        
-        if (!isInWorkingDir && !isInWorkspace) {
+
+        let isInExtra = false;
+        if (Array.isArray(this.config.EXTRA_ALLOWED_DIRS)) {
+            for (const extra of this.config.EXTRA_ALLOWED_DIRS) {
+                if (!extra) continue;
+                try {
+                    const absExtra = path.resolve(extra);
+                    if (absolutePath.startsWith(absExtra)) {
+                        isInExtra = true;
+                        break;
+                    }
+                } catch (e) {
+                    // ignore invalid entries
+                }
+            }
+        }
+
+        if (!isInWorkingDir && !isInWorkspace && !isInExtra) {
             throw new PathTraversalError(
                 `Path outside allowed directories. Please copy files to workspace folder: ${workspaceDir}`,
                 targetPath,
