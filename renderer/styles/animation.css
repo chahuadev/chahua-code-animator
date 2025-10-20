@@ -341,6 +341,31 @@ body.presentation-mode #animationContainer {
     overflow: hidden;
 }
 
+/* Fixed stage: slides are forced to render inside this boxed area. The stage keeps a fixed
+   design size and will scale down to fit smaller viewports while preserving the layout. */
+.presentation-stage {
+    width: 1100px; /* design width */
+    height: 620px; /* design height */
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 40px 80px rgba(2,6,23,0.55);
+    transform-origin: center center;
+    background: transparent;
+}
+
+/* When slides live inside the fixed stage, ensure inner content sizes to the stage area */
+.presentation-stage .slide-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: 2rem !important;
+    overflow: auto !important;
+    box-sizing: border-box;
+}
+
 .presentation-slide {
     position: absolute;
     inset: 0;

@@ -721,12 +721,32 @@ class PresentationAnimation {
         elements.container.innerHTML = '';
         setScrollable(false);
 
+        // Create presentation wrapper and fixed stage (design size). Slides will be placed
+        // inside the stage, which we scale to fit the viewport while keeping the layout.
         this.wrapper = document.createElement('div');
         this.wrapper.className = 'presentation-wrapper';
+
+        this.stage = document.createElement('div');
+        this.stage.className = 'presentation-stage';
+        this.wrapper.appendChild(this.stage);
+
         elements.container.appendChild(this.wrapper);
 
         this.slideElements = this.model.slides.map(slide => this.createSlideElement(slide));
-        this.slideElements.forEach(slideElement => this.wrapper.appendChild(slideElement));
+        // Append slides into the stage so they are confined by its bounds
+        this.slideElements.forEach(slideElement => this.stage.appendChild(slideElement));
+
+        // Scale stage to fit available space while preserving aspect ratio
+        this.updateStageScale = () => {
+            const containerRect = elements.container.getBoundingClientRect();
+            const designW = 1100;
+            const designH = 620;
+            const scale = Math.min((containerRect.width - 40) / designW, (containerRect.height - 140) / designH, 1);
+            this.stage.style.transform = `scale(${scale})`;
+        };
+        window.addEventListener('resize', this.updateStageScale);
+        // initial scale
+        this.updateStageScale();
 
         this.buildNavigation();
         this.showSlide(0);
@@ -1144,12 +1164,19 @@ class PresentationAnimation {
             this.nav = null;
         }
 
+        // remove resize listener and stage wrapper
+        if (this.updateStageScale) {
+            window.removeEventListener('resize', this.updateStageScale);
+            this.updateStageScale = null;
+        }
+
         if (this.wrapper) {
             this.wrapper.remove();
             this.wrapper = null;
         }
 
         this.slideElements = [];
+        this.stage = null;
         document.body.classList.remove('presentation-mode');
         setScrollable(false);
     }
