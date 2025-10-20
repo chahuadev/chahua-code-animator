@@ -40,6 +40,10 @@ Each phase below uses checkboxes to denote progress (`[x]` complete, `[ ]` pendi
 > - Implemented pointer-pass-through on navigation capsule and click-to-advance gestures outside the slide body.
 > - Compressed long bullet text automatically while preserving full hover tooltips for auditors.
 
+> **Patch (20 October 2025):**
+> - [x] Applied a small, targeted CSS fix in `renderer/styles/animation.css` to address an empty lower area seen on some agenda slides (notably Slides 2 and 3). The change makes `.presentation-stage .slide-inner` a column flex container and allows `.slide-blocks` and `.slide-agenda` to flex-grow and use the available stage height. No visual overlays or pseudo panels were added — this is a layout-only change to let content fill the fixed stage.
+> - How to verify: launch Presentation Mode, navigate to the affected slides (2 & 3) and confirm the inner list/block content fills the stage area; overflowing lists should scroll internally. This fix is intentionally minimal and low-risk.
+
 #### Fixed Stage Layout Action Plan
 - [ ] Define a canonical stage size (e.g. 1920×1080 logical pixels at 16:9) and render all slide content inside this stage only.
 - [ ] Wrap the stage in a responsive viewport that scales the entire presentation via `transform: scale(...)` (or CSS `zoom`) based on available window space while preserving the aspect ratio.
