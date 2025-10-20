@@ -98,7 +98,6 @@ const elements = {
     startAssembled: document.getElementById('startAssembled'),
     resetSettingsBtn: document.getElementById('resetSettingsBtn'),
     
-    previewBtn: document.getElementById('previewBtn'),
     playBtn: document.getElementById('playBtn'),
     previewContent: document.getElementById('previewContent'),
     previewStats: document.getElementById('previewStats'),
@@ -515,7 +514,7 @@ function highlightCode(code) {
 
 function updateActionAvailability() {
     const hasFile = !!state.fileContent;
-    elements.previewBtn.disabled = !hasFile;
+    // Quick Preview button removed; play button controls animation start
 
     let canPlay = hasFile;
     if (state.selectedStyle === PRESENTATION_STYLE) {
@@ -679,13 +678,7 @@ if (elements.resetSettingsBtn) {
     });
 }
 
-// Preview Button
-elements.previewBtn.addEventListener('click', () => {
-    if (!state.fileContent) return;
-    
-    showToast('Quick preview mode', 'info');
-    // TODO: Implement quick preview
-});
+// Quick Preview removed — no-op
 
 // Play Button
 elements.playBtn.addEventListener('click', async () => {
