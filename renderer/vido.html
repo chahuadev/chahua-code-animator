@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chahua Code Animator Showcase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+        }
+        .font-code {
+            font-family: 'Source Code Pro', monospace;
+        }
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+        .active {
+            opacity: 1;
+        }
+        .typing-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background-color: #60a5fa;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .animated-cursor {
+            width: 32px;
+            height: 32px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M6.21,3.45L4,5.66L12,13.65L19.5,6.15L17.28,3.93L12,9.21L6.21,3.45M3,21V3H4.42L12,10.59L19.58,3H21V21H3Z" /></svg>');
+            position: absolute;
+            z-index: 10;
+            transform-origin: top left;
+            animation: cursor-move 2s ease-in-out forwards;
+            animation-delay: 2.5s;
+            opacity: 0;
+        }
+
+        @keyframes cursor-move {
+            0% { opacity: 1; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(1.5); }
+            30% { top: 48%; left: 50%; transform: translate(-50%, -50%) scale(1.5); }
+            50% { top: 48%; left: 50%; transform: translate(-50%, -50%) scale(1.2); } /* Click effect */
+            70% { top: 62%; left: 50%; transform: translate(-50%, -50%) scale(1.5); }
+            90% { top: 62%; left: 50%; transform: translate(-50%, -50%) scale(1.2); } /* Click effect */
+            100% { opacity: 0; top: 62%; left: 50%; transform: translate(-50%, -50%) scale(1.5); }
+        }
+
+        /* Slide deck styling */
+        .slide {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: absolute;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .slide.active-slide {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #60a5fa;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden">
+
+    <div id="video-container" class="relative w-full h-screen mx-auto bg-black rounded-lg shadow-2xl overflow-hidden">
+
+        <!-- Scene 1: The Problem (0-2 seconds) -->
+        <div id="scene1" class="scene active">
+            <h2 class="text-3xl md:text-5xl font-bold mb-6 text-gray-400">Tired of static files?</h2>
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 w-full max-w-2xl text-left">
+                <pre class="text-gray-500 font-code text-sm md:text-base whitespace-pre-wrap">
+---
+title: Project Overview
+date: 2025-10-20
+---
+
+# Project Goals
+
+Our main goal is to build a performant and scalable web application.
+
+## Key Features
+- User Authentication
+- Real-time Data Sync
+- Responsive Design
+
+## Tech Stack
+- React
+- Firebase
+- Tailwind CSS</pre>
+            </div>
+        </div>
+
+        <!-- Scene 2: The Solution (2-4 seconds) -->
+        <div id="scene2" class="scene">
+             <div class="animated-cursor"></div>
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://storage.googleapis.com/gemini-prod-us-east1-9550/b25ada16-3807-4822-b603-d4979fd726ee'); filter: brightness(0.6);"></div>
+            <div class="relative z-10 text-center">
+                 <h2 class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">Choose Your Style</h2>
+                 <p class="text-2xl md:text-4xl mt-4 font-light text-blue-300 drop-shadow-lg">Typing or Presentation</p>
+            </div>
+        </div>
+
+        <!-- Scene 3: The Results (4-8 seconds) -->
+        <div id="scene3" class="scene">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center w-full">✨ Powered by the Gemini API</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-6xl h-3/4">
+                <!-- Left Side: Typing Animation -->
+                <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 flex flex-col">
+                    <div class="flex items-center mb-4">
+                        <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                        <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                        <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    </div>
+                    <div id="code-generator" class="flex-grow flex flex-col">
+                        <div class="bg-gray-900/50 p-3 rounded-md mb-4 text-sm">
+                            <span class="text-gray-400">Prompt:</span>
+                            <span class="text-white">"Write a function to generate a random user avatar URL"</span>
+                        </div>
+                        <div id="code-loader" class="flex-grow flex flex-col items-center justify-center hidden">
+                            <div class="spinner"></div>
+                            <p class="text-gray-400 mt-4">Generating with Gemini...</p>
+                        </div>
+                        <div id="code-output-container" class="font-code text-sm md:text-base flex-grow hidden">
+                            <span id="typing-output"></span><span class="typing-cursor"></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Side: Presentation -->
+                <div class="bg-gray-800 border border-gray-700 rounded-lg p-2 md:p-4 flex flex-col">
+                     <div class="bg-gray-900/50 p-3 rounded-md mb-4 text-sm flex-shrink-0">
+                        <span class="text-gray-400">Prompt:</span>
+                        <span class="text-white">"Create slides for a new AI photo app"</span>
+                    </div>
+                    <div id="slide-loader" class="flex-grow flex flex-col items-center justify-center hidden">
+                        <div class="spinner"></div>
+                        <p class="text-gray-400 mt-4">Generating with Gemini...</p>
+                    </div>
+                    <div id="slide-container" class="w-full h-full relative flex-grow hidden">
+                        <!-- Slides will be injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scene 4: Brand & CTA (8-12 seconds) -->
+        <div id="scene4" class="scene text-center">
+            <div class="mb-8">
+                <h1 class="text-5xl md:text-8xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">Chahua Code Animator</h1>
+                <p class="text-xl md:text-2xl text-gray-300 mt-4">Secure. Dynamic. Open-Source.</p>
+            </div>
+            <div class="space-y-3">
+                <a href="https://github.com/chahuadev/chahua-code-animator" target="_blank" class="block text-lg md:text-xl text-gray-400 hover:text-white transition-colors">
+                    GitHub: github.com/chahuadev/chahua-code-animator
+                </a>
+                <a href="https://www.npmjs.com/~chahuadev" target="_blank" class="block text-lg md:text-xl text-gray-400 hover:text-white transition-colors">
+                    NPM: npmjs.com/~chahuadev
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const scenes = document.querySelectorAll('.scene');
+        const sceneTimings = [2000, 2000, 4000, 6000]; // Adjusted for Gemini feature
+        let currentScene = 0;
+
+        function switchScene() {
+            scenes.forEach(scene => scene.classList.remove('active'));
+            currentScene = (currentScene + 1) % scenes.length;
+            const nextScene = scenes[currentScene];
+            nextScene.classList.add('active');
+
+            if (nextScene.id === 'scene3') {
+                startGeminiGenerators();
+            }
+            
+            const nextTimeout = sceneTimings[currentScene];
+            if (currentScene === scenes.length - 1) {
+                 setTimeout(() => {
+                    currentScene = -1;
+                    switchScene();
+                 }, nextTimeout);
+            } else {
+                 setTimeout(switchScene, nextTimeout);
+            }
+        }
+        
+        setTimeout(switchScene, sceneTimings[0]);
+
+        // --- Mock Gemini API Call ---
+        // This simulates a call to the Gemini API with a delay.
+        const mockGeminiForCode = () => {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const code = `
+const robohash = "https://robohash.org";
+const sizes = ["100x100", "200x200"];
+
+function generateAvatarUrl(userId) {
+  const randomSize = sizes[
+    Math.floor(Math.random() * sizes.length)
+  ];
+  return \`\${robohash}/\${userId}.png?size=\${randomSize}\`;
+}
+                    `.trim();
+                    resolve(code);
+                }, 1500);
+            });
+        };
+
+        const mockGeminiForSlides = () => {
+             return new Promise(resolve => {
+                setTimeout(() => {
+                    const slidesContent = [
+                        { title: 'Introducing SnapAI', subtitle: 'Your Intelligent Photo Companion' },
+                        { title: 'Key Features', points: ['AI-Powered Editing', 'Smart Organization', 'Cloud Sync'] },
+                        { title: 'Our Vision', subtitle: 'To revolutionize how you interact with your memories.' },
+                    ];
+                    resolve(slidesContent);
+                }, 1500);
+            });
+        }
+
+        function startGeminiGenerators() {
+            startTypingAnimation();
+            startSlideShow();
+        }
+
+        // --- Typing Animation Logic ---
+        const typingOutput = document.getElementById('typing-output');
+        const codeLoader = document.getElementById('code-loader');
+        const codeOutputContainer = document.getElementById('code-output-container');
+        let charIndex = 0;
+        let generatedCode = '';
+
+        function type() {
+            if (charIndex < generatedCode.length) {
+                typingOutput.innerHTML += generatedCode.charAt(charIndex).replace('\n', '<br/>');
+                charIndex++;
+                setTimeout(type, 25);
+            }
+        }
+        
+        async function startTypingAnimation() {
+            charIndex = 0;
+            typingOutput.innerHTML = '';
+            codeOutputContainer.classList.add('hidden');
+            codeLoader.classList.remove('hidden');
+
+            generatedCode = await mockGeminiForCode();
+
+            codeLoader.classList.add('hidden');
+            codeOutputContainer.classList.remove('hidden');
+            type();
+        }
+
+        // --- Slide Show Logic ---
+        const slideContainer = document.getElementById('slide-container');
+        const slideLoader = document.getElementById('slide-loader');
+        let currentSlide = 0;
+        let slideInterval;
+        let slides = [];
+
+        function switchSlide() {
+            slides.forEach(slide => slide.classList.remove('active-slide'));
+            currentSlide = (currentSlide + 1) % slides.length;
+            if(slides[currentSlide]) {
+                slides[currentSlide].classList.add('active-slide');
+            }
+        }
+
+        async function startSlideShow() {
+            if (slideInterval) clearInterval(slideInterval);
+            slideContainer.innerHTML = '';
+            slideContainer.classList.add('hidden');
+            slideLoader.classList.remove('hidden');
+            
+            const slidesContent = await mockGeminiForSlides();
+            
+            slideLoader.classList.add('hidden');
+            slideContainer.classList.remove('hidden');
+
+            // Create slide elements from generated content
+            slidesContent.forEach((content, index) => {
+                const slideEl = document.createElement('div');
+                slideEl.className = 'slide';
+                let innerHTML = `<h3 class="text-3xl font-bold text-blue-300 mb-4">${content.title}</h3>`;
+                if (content.subtitle) {
+                    innerHTML += `<p class="text-lg text-gray-300">${content.subtitle}</p>`;
+                }
+                if (content.points) {
+                    innerHTML += `<ul class="text-lg text-gray-300 list-disc list-inside space-y-2">`;
+                    content.points.forEach(point => {
+                        innerHTML += `<li>${point}</li>`;
+                    });
+                    innerHTML += `</ul>`;
+                }
+                slideEl.innerHTML = innerHTML;
+                slideContainer.appendChild(slideEl);
+            });
+
+            slides = slideContainer.querySelectorAll('.slide');
+
+            currentSlide = -1;
+            switchSlide();
+            slideInterval = setInterval(switchSlide, 1500);
+        }
+
+    </script>
+</body>
+</html>
+
