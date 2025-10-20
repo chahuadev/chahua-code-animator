@@ -187,6 +187,13 @@ body {
     flex-direction: column;
 }
 
+/* Ensure sidebar sits above preview/resizer so its interactive controls
+   aren't visually covered when window is narrow or during resize. */
+.sidebar {
+    position: relative;
+    z-index: 40;
+}
+
 .sidebar-section {
     margin-bottom: var(--spacing-xl);
 }
@@ -314,8 +321,10 @@ body {
 /* Style Grid */
 .style-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    /* prefer two comfortable columns but adapt when width shrinks */
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: var(--spacing-sm);
+    align-items: start;
 }
 
 .style-card {
@@ -371,6 +380,38 @@ body {
 .style-desc {
     font-size: 0.75rem;
     color: var(--text-muted);
+}
+
+/* Responsive fallback: on narrow sidebars collapse to single column and
+   hide non-essential description text to prevent clipping by the resizer.
+   Also reduce padding and present icon + text in a compact row. */
+@media (max-width: 920px) {
+    .style-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .style-card {
+        padding: 0.6rem 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: left;
+    }
+
+    .style-icon {
+        margin-bottom: 0;
+        flex: 0 0 44px;
+    }
+
+    .style-desc { display: none; }
+
+    .sidebar { padding-right: calc(var(--spacing-lg) + 8px); }
+}
+
+@media (max-width: 680px) {
+    .style-icon svg { width: 24px; height: 24px; }
+    .style-name { font-size: 0.9rem; }
 }
 
 /* Settings */
